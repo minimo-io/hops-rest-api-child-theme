@@ -20,7 +20,6 @@ add_action( 'rest_api_init', function () {
 add_action("admin_init", "hm_beer_count_sync");
 add_action('save_post', 'hm_refreshCache', 1); // clear REST cache after save
 
-
 function hm_build_request_uri($req_uri) {
   // No filter_input, see https://stackoverflow.com/questions/25232975/php-filter-inputinput-server-request-method-returns-null/36205923.
   $request_uri = filter_var( $req_uri, FILTER_SANITIZE_URL );
