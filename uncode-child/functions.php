@@ -19,6 +19,14 @@ add_action( 'rest_api_init', function () {
 });
 add_action("admin_init", "hm_beer_count_sync");
 add_action('save_post', 'hm_refreshCache', 1); // clear REST cache after save
+add_filter( 'avatar_defaults', 'hm_modify_default_avatar' ); // change default avatar
+
+function hm_modify_default_avatar ($avatar_defaults) {
+    $myavatar = 'https://hops.uy/wp-content/uploads/2021/06/avatar_1.png';
+    // OR --> $myavatar = "https://cdn.crunchify.com/Crunchify.png";
+    $avatar_defaults[$myavatar] = "Hops";
+    return $avatar_defaults;
+}
 
 function hm_build_request_uri($req_uri) {
   // No filter_input, see https://stackoverflow.com/questions/25232975/php-filter-inputinput-server-request-method-returns-null/36205923.
