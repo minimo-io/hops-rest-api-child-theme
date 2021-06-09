@@ -21,6 +21,29 @@ add_action("admin_init", "hm_beer_count_sync");
 add_action('save_post', 'hm_refreshCache', 1); // clear REST cache after save
 add_filter( 'avatar_defaults', 'hm_modify_default_avatar' ); // change default avatar
 
+add_action( 'user_register', 'hm_define_displayname' );
+add_action( 'profile_update', 'hm_define_displayname' );
+
+function hm_define_displayname( $user_id )
+{
+    $data = get_userdata( $user_id );
+    $firstName = get_user_meta( $user_id, 'first_name', true );
+    $lastName = get_user_meta( $user_id, 'last_name', true );
+
+    if (!empty($firstName) && !empty($lastName)) {
+      $firstName = ucfirst(strtolower($firstName));
+      $lastName = ucfirst(strtolower($lastName));
+      
+      $newName = $firstName." ".$lastName;
+
+      if ($newName != $data->display_name) {
+          wp_update_user( array ('ID' => $user_id, 'display_name' =>  $newName));
+      }
+    }
+
+
+}
+
 function hm_modify_default_avatar ($avatar_defaults) {
     $myavatar = 'https://hops.uy/wp-content/uploads/2021/06/avatar_1.png';
     // OR --> $myavatar = "https://cdn.crunchify.com/Crunchify.png";
