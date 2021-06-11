@@ -284,21 +284,26 @@ function hm_set_user_preferences_by_user_id($data){
   if (!isset($data["updateType"])) return new WP_Error( 'no_update_type', 'Please provide an updateType to specify the preference type to update', array( 'status' => 404 ) );
   if (!isset($data["userId"])) return new WP_Error( 'no_user_id', 'Please provide a userId param', array( 'status' => 404 ) );
 
-  // check if user exists
+  if ($data["updateType"] == "preferences"){
+    // check if user exists
+    $user = get_user_by("id", $data["userId"]);
+    if (!$user) return new WP_Error( 'user_not_founded', 'userId not founded in database', array( 'status' => 404 ) );
 
-  $user = get_user_by("id", $data["userId"]);
-  if (!$user) return new WP_Error( 'user_not_founded', 'userId not founded in database', array( 'status' => 404 ) );
+    // update beer type preferences
+    $beerTypes = $data["beerTypesPrefs"];
+    update_field('beers_preferences', $beerTypes, 'user_'.$data["userId"]);
 
-  $beerTypes = $data["beerTypes"];
-  update_field('beers_prefereces', $beerTypes, 'user_'.$data["userId"]);
+    // update news preferences
+    $newsPrefs = $data["newsPrefs"];
+    update_field('news_preferences', $newsPrefs, 'user_'.$data["userId"]);
 
-  //update_field('preferences_types', $count);
-
-  $ret["result"] = true;
-  $ret["data"] = $data["userId"];
+    $ret["result"] = true;
+    $ret["data"] = Array("beerTypesPrefs" => $beerTypes, "newsPrefs" => $newsPrefs);
 
 
-  return new WP_REST_Response($ret, 200);
+    return new WP_REST_Response($ret, 200);
+  }
+
 }
 
 function hm_get_beers_by_brewery_id( $data ) {
