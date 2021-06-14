@@ -284,10 +284,12 @@ function hm_set_user_preferences_by_user_id($data){
   if (!isset($data["updateType"])) return new WP_Error( 'no_update_type', 'Please provide an updateType to specify the preference type to update', array( 'status' => 404 ) );
   if (!isset($data["userId"])) return new WP_Error( 'no_user_id', 'Please provide a userId param', array( 'status' => 404 ) );
 
+  // check if user exists
+  $user = get_user_by("id", $data["userId"]);
+  if (!$user) return new WP_Error( 'user_not_founded', 'userId not founded in database', array( 'status' => 404 ) );
+
+  /// Update beer types and news preferences
   if ($data["updateType"] == "preferences"){
-    // check if user exists
-    $user = get_user_by("id", $data["userId"]);
-    if (!$user) return new WP_Error( 'user_not_founded', 'userId not founded in database', array( 'status' => 404 ) );
 
     // update beer type preferences
     $beerTypes = $data["beerTypesPrefs"];
@@ -304,6 +306,23 @@ function hm_set_user_preferences_by_user_id($data){
     return new WP_REST_Response($ret, 200);
   }
 
+  /// Update follow brewery preference
+  if ($data["updateType"] == "preferences"){
+    $ret = Array('result' => false, 'http'=> 404);
+    $breweryID = $data["breweryID"];
+
+    // get saved breweries string pref
+    $breweriesPrefs = get_field('breweries_preferences', 'user_'.$data["userId"]);
+    $a_breweriesPrefs = explode("|", $breweriesPrefs);
+      // if already NOT configured then add it
+    if (!in_array($breweryID, $a_breweriesPrefs)) $breweriesPrefs = $breweriesPrefs."|".$breweryID;
+
+    // save followed breweries string
+    $res = update_field('breweries_preferences', $breweriesPrefs, 'user_'.$data["userId"]);
+    if ($res) $ret = Array('result' => true, 'http'=> 200);
+    
+    return new WP_REST_Response($ret, 200);
+  }
 }
 
 function hm_get_beers_by_brewery_id( $data ) {
