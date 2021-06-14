@@ -306,23 +306,66 @@ function hm_set_user_preferences_by_user_id($data){
     return new WP_REST_Response($ret, 200);
   }
 
+
+
   /// Update follow brewery preference
-  if ($data["updateType"] == "preferences"){
-    $ret = Array('result' => false, 'http'=> 404);
-    $breweryID = $data["breweryID"];
+  if ($data["updateType"] == "breweriesPreferences"){
+
+    $ret = Array('result' => false, 'http'=> 404, 'data' => 'no_action');
+    $breweryID = $data["breweryId"];
+
 
     // get saved breweries string pref
+    if (!isset($data["addOrRemove"])) return new WP_REST_Response( Array('result' => true, 'http'=> 404, 'data'=> 'specify add or remove'), 404);
+
     $breweriesPrefs = get_field('breweries_preferences', 'user_'.$data["userId"]);
     $a_breweriesPrefs = explode("|", $breweriesPrefs);
-      // if already NOT configured then add it
-    if (!in_array($breweryID, $a_breweriesPrefs)) $breweriesPrefs = $breweriesPrefs."|".$breweryID;
 
-    // save followed breweries string
-    $res = update_field('breweries_preferences', $breweriesPrefs, 'user_'.$data["userId"]);
-    if ($res) $ret = Array('result' => true, 'http'=> 200);
-    
-    return new WP_REST_Response($ret, 200);
+    if ($data["addOrRemove"] == "add"){
+      if (empty($breweriesPrefs)) $breweriesPrefs = "";
+
+        // if already NOT configured then add it
+      if (!in_array($breweryID, $a_breweriesPrefs)){
+
+        if ($breweriesPrefs != "") $breweriesPrefs .= "|";
+        $breweriesPrefs .= $breweryID;
+        $res = update_field('breweries_preferences', $breweriesPrefs, 'user_'.$data["userId"]);
+        if ($res) $ret = Array('result' => true, 'http'=> 200, 'data'=> 'brewery_added');
+
+      }else{
+         $ret = Array('result' => false, 'http'=> 404, 'data'=> 'brewery_already_exists');
+      }
+    }else if($data["addOrRemove"] == "remove"){
+
+      foreach ($a_breweriesPrefs as $breweryIndex => $brewery){
+        if ($brewery == $breweryID){
+          array_splice($a_breweriesPrefs, $breweryIndex, 1);
+          break;
+        }
+
+      }
+
+      $newBreweriesString = implode("|", $a_breweriesPrefs);
+      if ($newBreweriesString == $breweriesPrefs){
+        // was not removed because there was no id configured
+        $ret = Array('result' => false, 'http'=> 404, 'data'=> 'brewery_to_remove_does_not_exists');
+      }else{
+        $res = update_field('breweries_preferences', $newBreweriesString, 'user_'.$data["userId"]);
+        if ($res) $ret = Array('result' => true, 'http'=> 200, 'data'=> 'brewery_removed');
+      }
+
+
+
+    }
+
+
+
+
+    return new WP_REST_Response($ret, $ret["http"]);
   }
+
+
+
 }
 
 function hm_get_beers_by_brewery_id( $data ) {
