@@ -283,6 +283,16 @@ function hm_get_image_src( $imageID ) {
   return $feat_img_array[0];
 }
 
+function incrementDecrementBreweryFollowers($incrementOrDecrement = "increment", $breweryID){
+  if (!$breweryID) return false;
+  $followesCount = get_field("followers", $breweryID);
+  if (!$followesCount) $followesCount = 0;
+  if ($incrementOrDecrement == "increment") $followesCount = $followesCount + 1;
+  if ($incrementOrDecrement == "decrement") $followesCount = $followesCount - 1;
+  return update_field("followers", $followesCount, $breweryID);
+
+}
+
 function hm_set_user_preferences_by_user_id($data){
   $ret = Array();
   $data = $data->get_params();
@@ -335,8 +345,15 @@ function hm_set_user_preferences_by_user_id($data){
 
         if ($breweriesPrefs != "") $breweriesPrefs .= "|";
         $breweriesPrefs .= $breweryID;
+
+
         $res = update_field('breweries_preferences', $breweriesPrefs, 'user_'.$data["userId"]);
-        if ($res) $ret = Array('result' => true, 'http'=> 200, 'data'=> 'brewery_added');
+
+        if ($res) {
+          incrementDecrementBreweryFollowers("increment", $breweryID);
+          hm_refreshCache($breweryID);
+          $ret = Array('result' => true, 'http'=> 200, 'data'=> 'brewery_added');
+        }
 
       }else{
          $ret = Array('result' => false, 'http'=> 404, 'data'=> 'brewery_already_exists');
@@ -357,7 +374,11 @@ function hm_set_user_preferences_by_user_id($data){
         $ret = Array('result' => false, 'http'=> 404, 'data'=> 'brewery_to_remove_does_not_exists');
       }else{
         $res = update_field('breweries_preferences', $newBreweriesString, 'user_'.$data["userId"]);
-        if ($res) $ret = Array('result' => true, 'http'=> 200, 'data'=> 'brewery_removed');
+        if ($res){
+          incrementDecrementBreweryFollowers("decrement", $breweryID);
+          hm_refreshCache($breweryID);
+          $ret = Array('result' => true, 'http'=> 200, 'data'=> 'brewery_removed');
+        }
       }
 
 
