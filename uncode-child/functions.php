@@ -123,6 +123,12 @@ function hm_getPostCacheKeys($postID){
 
   return $keys;
 }
+function hm_refreshAllCache(){
+  $caching = \WP_Rest_Cache_Plugin\Includes\Caching\Caching::get_instance();
+
+  return $caching->clear_caches(); // works but deletes EVERYTHING
+
+}
 // clear cache after a save/edit action (for WP REST Cache plugin)
 function hm_refreshCache($postID){
   // If this is just a post revision, do nothing.
@@ -289,8 +295,13 @@ function incrementDecrementBreweryFollowers($incrementOrDecrement = "increment",
   if (!$followesCount) $followesCount = 0;
   if ($incrementOrDecrement == "increment") $followesCount = $followesCount + 1;
   if ($incrementOrDecrement == "decrement") $followesCount = $followesCount - 1;
-  return update_field("followers", $followesCount, $breweryID);
 
+  $ret = update_field("followers", $followesCount, $breweryID);
+  if ($ret){
+    $retCache = hm_refreshCache($breweryID);
+    if (!$retCache) hm_refreshAllCache(); // if not working then delete all cache
+  }
+  return $ret;
 }
 
 function hm_set_user_preferences_by_user_id($data){
@@ -351,7 +362,7 @@ function hm_set_user_preferences_by_user_id($data){
 
         if ($res) {
           incrementDecrementBreweryFollowers("increment", $breweryID);
-          hm_refreshCache($breweryID);
+
           $ret = Array('result' => true, 'http'=> 200, 'data'=> 'brewery_added');
         }
 
@@ -376,7 +387,7 @@ function hm_set_user_preferences_by_user_id($data){
         $res = update_field('breweries_preferences', $newBreweriesString, 'user_'.$data["userId"]);
         if ($res){
           incrementDecrementBreweryFollowers("decrement", $breweryID);
-          hm_refreshCache($breweryID);
+
           $ret = Array('result' => true, 'http'=> 200, 'data'=> 'brewery_removed');
         }
       }
