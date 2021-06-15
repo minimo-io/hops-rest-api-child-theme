@@ -17,9 +17,15 @@ add_action( 'rest_api_init', function () {
    ) );
    // set user preferences
    register_rest_route( 'hops/v1', '/updateUser', array(
-      'methods' => Array('POST', 'GET'),
+      'methods' => Array('POST'),
       'callback' => 'hm_set_user_preferences_by_user_id',
     ) );
+
+    // get user preferences custom fields
+    register_rest_route( 'hops/v1', '/getUser/userID/(?P<userId>[\d]+)/(?P<type>[a-zA-Z0-9_-]+)', array(
+       'methods' => 'GET',
+       'callback' => 'hm_get_user_preferences_from_id',
+     ) );
 
 });
 add_action("admin_init", "hm_beer_count_sync");
@@ -365,6 +371,37 @@ function hm_set_user_preferences_by_user_id($data){
   }
 
 
+
+}
+
+function hm_get_user_preferences_from_id($data){
+  $userID = $data["userId"];
+  $prefType = $data["type"];
+  $ret = Array('result' => false, 'data' => 'no_action');
+
+  if (!$userID) return new WP_REST_Response(Array('result' =>false, 'data' => 'no_user_id'), 404);
+  if (!$prefType) return new WP_REST_Response(Array('result' =>false, 'data' => 'no_preference_type'), 404);
+
+  if ($prefType == "breweries_preferences"){
+
+    $outputData = get_field('breweries_preferences', 'user_'.$userID);
+
+
+  }else if($prefType == "news_preferences"){
+
+    $outputData = get_field('news_preferences', 'user_'.$userID);
+
+  }else{
+
+    return new WP_REST_Response(Array('result' =>false, 'data' => 'invalid_preference_type'), 404);
+
+  }
+
+  if (!$outputData) $outputData = "";
+  return new WP_REST_Response(Array('result' => $outputData, 'data' => 'ok_results'), 200);
+
+  // default error
+  //return new WP_REST_Response($ret, 200);
 
 }
 
