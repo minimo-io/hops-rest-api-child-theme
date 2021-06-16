@@ -477,7 +477,8 @@ function hm_set_user_preferences_by_user_id($data){
 
 
     }
-
+    return new WP_REST_Response($ret, $ret["http"]);
+  }
 }
 
 function hm_get_user_preferences_from_id($data){
