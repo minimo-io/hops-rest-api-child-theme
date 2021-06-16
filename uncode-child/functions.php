@@ -304,6 +304,21 @@ function incrementDecrementBreweryFollowers($incrementOrDecrement = "increment",
   return $ret;
 }
 
+function incrementDecrementBeerFollowers($incrementOrDecrement = "increment", $beerID){
+  if (!$beerID) return false;
+  $followesCount = get_field("followers", $beerID);
+  if (!$followesCount) $followesCount = 0;
+  if ($incrementOrDecrement == "increment") $followesCount = $followesCount + 1;
+  if ($incrementOrDecrement == "decrement") $followesCount = $followesCount - 1;
+
+  $ret = update_field("followers", $followesCount, $beerID);
+  if ($ret){
+    $retCache = hm_refreshCache($beerID);
+    if (!$retCache) hm_refreshAllCache(); // if not working then delete all cache
+  }
+  return $ret;
+}
+
 function hm_set_user_preferences_by_user_id($data){
   $ret = Array();
   $data = $data->get_params();
@@ -402,7 +417,66 @@ function hm_set_user_preferences_by_user_id($data){
     return new WP_REST_Response($ret, $ret["http"]);
   }
 
+  /// Update follow brewery preference
+  if ($data["updateType"] == "beersFavoritesPreference"){
 
+    $ret = Array('result' => false, 'http'=> 404, 'data' => 'no_action');
+    $beerID = $data["beerId"];
+
+
+    // get saved breweries string pref
+    if (!isset($data["addOrRemove"])) return new WP_REST_Response( Array('result' => true, 'http'=> 404, 'data'=> 'specify add or remove'), 404);
+
+    $beersPrefs = get_field('beers_favorites_preference', 'user_'.$data["userId"]);
+    $a_beersPrefs = explode("|", $beersPrefs);
+
+    if ($data["addOrRemove"] == "add"){
+      if (empty($a_beersPrefs)) $a_beersPrefs = "";
+
+        // if already NOT configured then add it
+      if (!in_array($beerID, $a_beersPrefs)){
+
+        if ($beersPrefs != "") $beersPrefs .= "|";
+        $beersPrefs .= $beerID;
+
+
+        $res = update_field('beers_favorites_preference', $beersPrefs, 'user_'.$data["userId"]);
+
+        if ($res) {
+          incrementDecrementBeerFollowers("increment", $beerID);
+
+          $ret = Array('result' => true, 'http'=> 200, 'data'=> 'beer_added');
+        }
+
+      }else{
+         $ret = Array('result' => false, 'http'=> 404, 'data'=> 'beer_already_exists');
+      }
+    }else if($data["addOrRemove"] == "remove"){
+
+      foreach ($a_beersPrefs as $beerIndex => $beer){
+        if ($beer == $beerID){
+          array_splice($a_beersPrefs, $beerIndex, 1);
+          break;
+        }
+
+      }
+
+      $newBeersString = implode("|", $a_beersPrefs);
+      if ($newBeersString == $beersPrefs){
+        // was not removed because there was no id configured
+        $ret = Array('result' => false, 'http'=> 404, 'data'=> 'beer_to_remove_does_not_exists');
+      }else{
+        $res = update_field('beers_favorites_preference', $newBeersString, 'user_'.$data["userId"]);
+        if ($res){
+          incrementDecrementBeerFollowers("decrement", $beerID);
+
+          $ret = Array('result' => true, 'http'=> 200, 'data'=> 'beer_removed');
+        }
+      }
+
+
+
+    }
 
 }
 
