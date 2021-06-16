@@ -423,6 +423,10 @@ function hm_get_user_preferences_from_id($data){
 
     $outputData = get_field('news_preferences', 'user_'.$userID);
 
+  }else if($prefType == "beers_favorites_preference"){
+
+    $outputData = get_field('beers_favorites_preference', 'user_'.$userID);
+
   }else{
 
     return new WP_REST_Response(Array('result' =>false, 'data' => 'invalid_preference_type'), 404);
