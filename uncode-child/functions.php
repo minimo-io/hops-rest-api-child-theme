@@ -41,7 +41,7 @@ add_filter( 'avatar_defaults', 'hm_modify_default_avatar' ); // change default a
 
 add_action( 'user_register', 'hm_define_displayname' );
 add_action( 'profile_update', 'hm_define_displayname' );
-
+add_filter('duplicate_comment_id', '__return_false'); // allow duplicate comments
 
 function hm_add_edit_user_comment($data){
 
@@ -75,13 +75,19 @@ function hm_add_edit_user_comment($data){
         'comment_approved' => 1,
     );
 
-    if ($data["addOrEdit"] == "add"){
+    if ( $data["commentId"] == "0" ){
 
       //$comment_id = wp_insert_comment($data);
       $comment_id = wp_new_comment($commentData);
       if ($comment_id){
+        // update comment score
+        if ($data["rating"] && $data["rating"] != 0) update_field( 'score', $data["rating"], get_comment($comment_id) );
+        // update comment status
+        wp_set_comment_status($comment_id, 'approve');
 
         // update beer score custom field
+
+        // generate return values
         $ret = Array();
         $ret["result"] = true;
         $ret["data"] = Array("comment_id" => $comment_id);
@@ -94,11 +100,9 @@ function hm_add_edit_user_comment($data){
       }
 
 
-    }else if( ($data["addOrEdit"] == "edit") ){
+    }else{
 
-        // https://developer.wordpress.org/reference/functions/wp_delete_comment/
-        // https://developer.wordpress.org/reference/functions/delete_comment_meta/
-
+        // wp_update_comment( array $commentarr, bool $wp_error = false )
 
     }
 
