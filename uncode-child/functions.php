@@ -27,6 +27,13 @@ add_action( 'rest_api_init', function () {
        'callback' => 'hm_get_user_preferences_from_id',
      ) );
 
+     // update comment for beer or brewery
+     register_rest_route( 'hops/v1', '/updateComment', array(
+        'methods' => Array('POST'),
+        'callback' => 'hm_add_edit_user_comment',
+      ) );
+
+
 });
 add_action("admin_init", "hm_beer_count_sync");
 add_action('save_post', 'hm_refreshCache', 1); // clear REST cache after save
@@ -35,6 +42,92 @@ add_filter( 'avatar_defaults', 'hm_modify_default_avatar' ); // change default a
 add_action( 'user_register', 'hm_define_displayname' );
 add_action( 'profile_update', 'hm_define_displayname' );
 
+
+function hm_add_edit_user_comment($data){
+
+  $ret = Array();
+  $data = $data->get_params();
+  //if (!isset($data["updateType"])) return new WP_Error( 'no_update_type', 'Please provide an updateType to specify the preference type to update', array( 'status' => 404 ) );
+  if (!isset($data["userId"])) return new WP_Error( 'no_user_id', 'Please provide a userId param', array( 'status' => 404 ) );
+  if (!isset($data["postId"])) return new WP_Error( 'no_post_id', 'Please provide a postId param', array( 'status' => 404 ) );
+
+  // check if user exists
+  $user = get_user_by("id", $data["userId"]);
+  if (!$user) return new WP_Error( 'user_not_founded', 'userId not founded in database', array( 'status' => 404 ) );
+
+  $agent = $_SERVER['HTTP_USER_AGENT'];
+  $userComment = $data["userComment"];
+
+  if (
+    isset($user->data->display_name)
+    && isset($user->data->user_email)
+  ){
+    $commentData = array(
+        'user_id' => $data["userId"],
+        'comment_post_ID' => $data["postId"],
+        'comment_author' => $user->data->display_name,
+        'comment_author_email' => $user->data->user_email,
+        'comment_content' => $userComment,
+        'comment_author_IP' => hops_get_the_user_ip(),
+        'comment_agent' => $agent,
+        'comment_date' => date('Y-m-d H:i:s'),
+        'comment_date_gmt' => date('Y-m-d H:i:s'),
+        'comment_approved' => 1,
+    );
+
+    if ($data["addOrEdit"] == "add"){
+
+      //$comment_id = wp_insert_comment($data);
+      $comment_id = wp_new_comment($commentData);
+      if ($comment_id){
+
+        // update beer score custom field
+        $ret = Array();
+        $ret["result"] = true;
+        $ret["data"] = Array("comment_id" => $comment_id);
+
+
+        return new WP_REST_Response($ret, 200);
+
+      }else{
+        return new WP_Error( 'error_inserting_comment', 'Error after trying to insert comment.', array( 'status' => 404 ) );
+      }
+
+
+    }else if( ($data["addOrEdit"] == "edit") ){
+
+        // https://developer.wordpress.org/reference/functions/wp_delete_comment/
+        // https://developer.wordpress.org/reference/functions/delete_comment_meta/
+
+
+    }
+
+
+
+  }else{
+
+    return new WP_Error( 'no_user_data', 'Unknown user data', array( 'status' => 404 ) );
+
+  }
+
+
+}
+
+
+function hops_get_the_user_ip() {
+
+  if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
+  //check ip from share internet
+    $ip = $_SERVER['HTTP_CLIENT_IP'];
+  }elseif( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+    //to check ip is pass from proxy
+    $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+  }else{
+    $ip = $_SERVER['REMOTE_ADDR'];
+  }
+  return apply_filters( 'wpb_get_ip', $ip );
+
+}
 function hm_define_displayname( $user_id )
 {
     $data = get_userdata( $user_id );
