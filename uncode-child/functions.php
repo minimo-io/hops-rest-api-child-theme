@@ -57,7 +57,18 @@ function hops_add_user_comment_to_product_response($userId, $postId){
 
   if( empty($comment) ) return Array();
 
-  return (array)$comment;
+  $comments = (array)$comment;
+  $newCommentArray = Array();
+
+  foreach ( $comments as $commentKey => $commentObj ) {
+    $comment_rating = get_field("score", $commentObj);
+    $commentObj = (array)$commentObj;
+    $commentObj["comment_rating"] = $comment_rating;
+    $newCommentArray[] = (object)$commentObj;
+
+  }
+  //var_dump($newCommentArray);die();
+  return $newCommentArray;
 }
 
 // extend product response to add for example if user has commented.
