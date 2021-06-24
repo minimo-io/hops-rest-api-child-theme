@@ -42,6 +42,34 @@ add_filter( 'avatar_defaults', 'hm_modify_default_avatar' ); // change default a
 add_action( 'user_register', 'hm_define_displayname' );
 add_action( 'profile_update', 'hm_define_displayname' );
 add_filter('duplicate_comment_id', '__return_false'); // allow duplicate comments
+add_filter('woocommerce_rest_prepare_product_object', 'hops_extend_product_response', 10, 3); // extend product response
+
+// extend product response to add for example if user has commented.
+function hops_extend_product_response($response, $object, $request) {
+    if (empty($response->data))
+        return $response;
+
+    $id = $object->get_id(); //it will fetch product id
+    $userId = $request->get_param( 'userId' );
+
+    $aResponse = Array();
+    $user = get_user_by("id", $userId); // check if user exists
+    if (!$user) return $response;
+
+    $comment = get_comments(array(
+      'user_id' => $userId, // use user_id
+      'post_id' => $id
+    ));
+
+    if( empty($comment) ) return $response;
+
+    $response->data['user_comment'] = (array)$comment;
+
+
+
+    return $response;
+}
+
 
 function hm_add_edit_user_comment($data){
 
