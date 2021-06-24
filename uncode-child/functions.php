@@ -44,28 +44,37 @@ add_action( 'profile_update', 'hm_define_displayname' );
 add_filter('duplicate_comment_id', '__return_false'); // allow duplicate comments
 add_filter('woocommerce_rest_prepare_product_object', 'hops_extend_product_response', 10, 3); // extend product response
 
+
+function hops_add_user_comment_to_product_response($userId, $postId){
+  // check if user exists
+  $user = get_user_by("id", $userId); // check if user exists
+  if (!$user) return Array();
+
+  $comment = get_comments(array(
+    'user_id' => $userId, // use user_id
+    'post_id' => $postId
+  ));
+
+  if( empty($comment) ) return Array();
+
+  return (array)$comment;
+}
+
 // extend product response to add for example if user has commented.
 function hops_extend_product_response($response, $object, $request) {
     if (empty($response->data))
         return $response;
 
-    $id = $object->get_id(); //it will fetch product id
+    $response->data['user_comment'] = Array(); // init empty
+
+    $postId = $object->get_id(); //it will fetch product id
     $userId = $request->get_param( 'userId' );
 
-    $aResponse = Array();
-    $user = get_user_by("id", $userId); // check if user exists
-    if (!$user) return $response;
+    $comments = hops_add_user_comment_to_product_response($userId, $postId);
 
-    $comment = get_comments(array(
-      'user_id' => $userId, // use user_id
-      'post_id' => $id
-    ));
+    if( empty($comments) ) return $response;
 
-    if( empty($comment) ) return $response;
-
-    $response->data['user_comment'] = (array)$comment;
-
-
+    $response->data['user_comment'] = $comments;
 
     return $response;
 }
@@ -644,42 +653,34 @@ function hm_get_user_preferences_from_id($data){
 function hm_get_beers_by_brewery_id( $data ) {
 
   $args = wp_parse_args( $args, array(
-          //'post_type' => 'product',
-          'status' => array( 'publish' ),
-          //'type' => array_merge( array_keys( wc_get_product_types() ) ),
-          //'parent' => null,
-          //'sku' => '',
-          //'category' => array(),
-          //'tag' => array(),
-          //'limit' => get_option( 'posts_per_page' ),
-          // 'offset' => null,
-          // 'page' => 1,
-          //'include' => array(),
-          //'exclude' => array(),
-          //'orderby' => 'date',
-          //'order' => 'DESC',
-          //'return' => 'objects',
-          //'paginate' => false,
-          //'shipping_class' => array(),
-          'meta_key' => 'brewery',
-          'meta_value' => $data['breweryID'], //'meta_value' => array('yes'),
-          'meta_compare' => '=' //'meta_compare' => 'NOT IN'  or = or IN
+      'status' => array( 'publish' ),
+      'meta_key' => 'brewery',
+      'meta_value' => $data['breweryID'], //'meta_value' => array('yes'),
+      'meta_compare' => '=' //'meta_compare' => 'NOT IN'  or = or IN
    ) );
 
  //$p = wc_get_products(array('status' => 'publish', 'category' => $data['slug']));
  $p = wc_get_products($args);
-    $products = array();
-
-    foreach ($p as $product) {
-        $a_product = $product->get_data();
-        $a_product["featured_image"] = hm_get_image_src($a_product["image_id"]);
-        if (class_exists('ACF')) $a_product["bg_color"] = get_field("bg_color", $a_product["id"]);
-        $products[] = $a_product;
+  $products = array();
+  $userId = (isset($data["userId"]) ? $data["userId"] : "0" );
 
 
-    }
+  foreach ($p as $product) {
+      $a_product = $product->get_data();
+      $comments = hops_add_user_comment_to_product_response($userId, $a_product["id"]);
 
-    return new WP_REST_Response($products, 200);
+
+      $a_product["featured_image"] = hm_get_image_src($a_product["image_id"]);
+      $a_product['user_comment'] = $comments; //try to add user comment for product if any
+
+      if (class_exists('ACF')) $a_product["bg_color"] = get_field("bg_color", $a_product["id"]);
+
+      $products[] = $a_product;
+
+
+  }
+
+  return new WP_REST_Response($products, 200);
 }
 
 
