@@ -123,7 +123,7 @@ function hm_add_edit_user_comment($data){
         'comment_approved' => 1,
     );
 
-    if ( $data["commentId"] == "0" ){
+    if ( !isset($data["commentId"]) || $data["commentId"] == "0" ){
 
       //$comment_id = wp_insert_comment($data);
       $comment_id = wp_new_comment($commentData);
@@ -138,9 +138,9 @@ function hm_add_edit_user_comment($data){
         // generate return values
         $ret = Array();
         $ret["result"] = true;
-        $ret["data"] = Array("comment_id" => $comment_id);
+        $ret["data"] = Array("comment" => get_comment($comment_id), "add_or_edit" => "add");
 
-
+        hm_refreshCache($data["postId"]);
         return new WP_REST_Response($ret, 200);
 
       }else{
@@ -149,8 +149,26 @@ function hm_add_edit_user_comment($data){
 
 
     }else{
+      // check if we are sending the propper id
+      if (!isset($data["commentId"])) return new WP_Error( 'no_comment_id', 'Please provide a commentId param', array( 'status' => 404 ) );
+      $comment_id = $data["commentId"];
 
-        // wp_update_comment( array $commentarr, bool $wp_error = false )
+      // add to the above comment data the id in order to edit
+      $commentData['comment_ID'] = $comment_id;
+
+      wp_update_comment( $commentData );
+
+      // wp_update_comment( array $commentarr, bool $wp_error = false )
+      // update comment score
+      if ($data["rating"] && $data["rating"] != 0) update_field( 'score', $data["rating"], get_comment($comment_id) );
+
+      // generate return values
+      $ret = Array();
+      $ret["result"] = true;
+      $ret["data"] = Array("comment" => get_comment($comment_id), "add_or_edit" => "edit");
+
+      hm_refreshCache($data["postId"]);
+      return new WP_REST_Response($ret, 200);
 
     }
 
@@ -302,12 +320,13 @@ function hm_refreshCache($postID){
   //   //$caching->delete_cache_by_endpoint("wc/v3"); // not working
   //   //$caching->delete_cache_by_endpoint("hops/v1"); // not working
   // }
-
+  $ret = false;
   $a_cacheKeys = hm_getPostCacheKeys($postID, $postCacheType);
   foreach ( $a_cacheKeys as $key ) {
     $ret = $caching->delete_cache($key);
   }
-
+  if (!$ret) $ret = hm_refreshAllCache();
+  return $ret;
 }
 
 function hm_beer_count_sync(){
@@ -444,7 +463,6 @@ function incrementDecrementBreweryFollowers($incrementOrDecrement = "increment",
   $ret = update_field("followers", $followesCount, $breweryID);
   if ($ret){
     $retCache = hm_refreshCache($breweryID);
-    if (!$retCache) hm_refreshAllCache(); // if not working then delete all cache
   }
   return $ret;
 }
@@ -459,7 +477,6 @@ function incrementDecrementBeerFollowers($incrementOrDecrement = "increment", $b
   $ret = update_field("followers", $followesCount, $beerID);
   if ($ret){
     $retCache = hm_refreshCache($beerID);
-    if (!$retCache) hm_refreshAllCache(); // if not working then delete all cache
   }
   return $ret;
 }
