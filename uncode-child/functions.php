@@ -43,7 +43,49 @@ add_action( 'user_register', 'hm_define_displayname' );
 add_action( 'profile_update', 'hm_define_displayname' );
 add_filter('duplicate_comment_id', '__return_false'); // allow duplicate comments
 add_filter('woocommerce_rest_prepare_product_object', 'hops_extend_product_response', 10, 3); // extend product response
+// add extra field (author comment) for pages
+add_action( 'rest_api_init', function () {
+    register_rest_field( 'page', 'user_comment', array(
+        'get_callback' => function( $page, $fieldName, $request, $objectType ) {
+            //global $wp_rest_additional_fields;
+            $userId = $request->get_param("userId");
 
+            // check if user exists
+            $user = get_user_by("id", $userId); // check if user exists
+            if (!$user) return Array();
+
+            $comments = hops_add_user_comment_to_product_response($userId, $page["id"]);
+
+            if( empty($comments) ) return Array();
+
+            return $comments;
+            /*
+            $comment_obj = get_comment( $page['user_id'] );
+            return (array) $comment_obj;
+              */
+        },
+        'update_callback' => function( $user_comment, $comment_obj ) {
+            /*
+            $ret = wp_update_comment( array(
+                'comment_ID'    => $comment_obj->comment_ID,
+                'comment_karma' => $karma
+            ) );
+            if ( false === $ret ) {
+                return new WP_Error(
+                  'rest_comment_karma_failed',
+                  __( 'Failed to update comment karma.' ),
+                  array( 'status' => 500 )
+                );
+            }
+            */
+            return true;
+        },
+        'schema' => array(
+            'description' => __( 'User comment.' ),
+            'type'        => 'string'
+        ),
+    ) );
+} );
 
 function hops_add_user_comment_to_product_response($userId, $postId){
   // check if user exists
