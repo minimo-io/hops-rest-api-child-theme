@@ -45,6 +45,7 @@ add_filter('duplicate_comment_id', '__return_false'); // allow duplicate comment
 add_filter('woocommerce_rest_prepare_product_object', 'hops_extend_product_response', 10, 3); // extend product response
 // add extra field (author comment) for pages
 add_action( 'rest_api_init', function () {
+    // add user_comment value to breweries (pages)
     register_rest_field( 'page', 'user_comment', array(
         'get_callback' => function( $page, $fieldName, $request, $objectType ) {
             //global $wp_rest_additional_fields;
@@ -65,19 +66,6 @@ add_action( 'rest_api_init', function () {
               */
         },
         'update_callback' => function( $user_comment, $comment_obj ) {
-            /*
-            $ret = wp_update_comment( array(
-                'comment_ID'    => $comment_obj->comment_ID,
-                'comment_karma' => $karma
-            ) );
-            if ( false === $ret ) {
-                return new WP_Error(
-                  'rest_comment_karma_failed',
-                  __( 'Failed to update comment karma.' ),
-                  array( 'status' => 500 )
-                );
-            }
-            */
             return true;
         },
         'schema' => array(
@@ -85,6 +73,28 @@ add_action( 'rest_api_init', function () {
             'type'        => 'string'
         ),
     ) );
+
+    // add scores to breweries
+    register_rest_field( 'page', 'scores', array(
+        'get_callback' => function( $page ) {
+
+            $postScores = hm_post_scores( $page["id"] );
+            return Array(
+              'opinionCount' => $postScores["opinionCount"],
+              'opinionScore' => $postScores["opinionScore"],
+            );
+
+        },
+        'update_callback' => function( $scores, $comment_obj ) {
+            return true;
+        },
+        'schema' => array(
+            'description' => __( 'Post score.' ),
+            'type'        => 'string'
+        ),
+    ) );
+
+
 } );
 
 function hops_add_user_comment_to_product_response($userId, $postId){
@@ -119,7 +129,10 @@ function hops_extend_product_response($response, $object, $request) {
         return $response;
 
     $response->data['user_comment'] = Array(); // init empty
-
+    $response->data['scores'] = Array(
+      'opinionCount' => 0,
+      'opinionScore' => 0.0
+    );
     $postId = $object->get_id(); //it will fetch product id
     $userId = $request->get_param( 'userId' );
 
@@ -127,7 +140,13 @@ function hops_extend_product_response($response, $object, $request) {
 
     if( empty($comments) ) return $response;
 
+    $postScores = hm_post_scores($postId);
+
     $response->data['user_comment'] = $comments;
+    $response->data['scores'] = Array(
+      'opinionCount' => $postScores["opinionCount"],
+      'opinionScore' => $postScores["opinionScore"]
+    );
 
     return $response;
 }
@@ -141,14 +160,19 @@ function hm_post_scores($postId){
   $opinionCount = 0;
   $opinionScore = 0.0;
   foreach ( $comments as $comment ) {
-      $commentScore = get_field("score", $comment) * 1;
+      $commentScore = get_field("score", $comment);
+      if ($commentScore){
+        $opinionScore += $commentScore;
+      }
 
-      $opinionScore += $commentScore;
       $opinionCount++;
   }
+  $scoreFactor = $opinionScore;
+  if ($opinionScore > 0) $scoreFactor = $opinionScore / $opinionCount;
+
   return Array(
     'opinionCount' => $opinionCount,
-    'opinionScore' => round( $opinionScore / $opinionCount, 2),
+    'opinionScore' => round($scoreFactor , 2),
 
   );
 
