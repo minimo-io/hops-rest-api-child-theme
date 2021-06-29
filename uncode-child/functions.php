@@ -132,6 +132,27 @@ function hops_extend_product_response($response, $object, $request) {
     return $response;
 }
 
+/// get product score (count + avg score)
+function hm_post_scores($postId){
+
+  $comments = get_comments( Array(
+    "post_id" => $postId
+  ) );
+  $opinionCount = 0;
+  $opinionScore = 0.0;
+  foreach ( $comments as $comment ) {
+      $commentScore = get_field("score", $comment) * 1;
+
+      $opinionScore += $commentScore;
+      $opinionCount++;
+  }
+  return Array(
+    'opinionCount' => $opinionCount,
+    'opinionScore' => round( $opinionScore / $opinionCount, 2),
+
+  );
+
+}
 
 function hm_add_edit_user_comment($data){
 
@@ -175,12 +196,17 @@ function hm_add_edit_user_comment($data){
         // update comment status
         wp_set_comment_status($comment_id, 'approve');
 
-        // update beer score custom field
-
+        // get post score
+        $postScores = hm_post_scores($data["postId"]);
         // generate return values
         $ret = Array();
         $ret["result"] = true;
-        $ret["data"] = Array("comment" => get_comment($comment_id), "add_or_edit" => "add");
+        $ret["data"] = Array(
+          "comment" => get_comment($comment_id),
+          "add_or_edit" => "add"
+        );
+        $ret["opinionCount"] = $postScores["opinionCount"];
+        $ret["opinionScore"] = $postScores["opinionScore"];
 
         hm_refreshCache($data["postId"]);
         return new WP_REST_Response($ret, 200);
@@ -199,15 +225,21 @@ function hm_add_edit_user_comment($data){
       $commentData['comment_ID'] = $comment_id;
 
       wp_update_comment( $commentData );
-
-      // wp_update_comment( array $commentarr, bool $wp_error = false )
       // update comment score
       if ($data["rating"] && $data["rating"] != 0) update_field( 'score', $data["rating"], get_comment($comment_id) );
+
+      // get post score
+      $postScores = hm_post_scores($data["postId"]);
 
       // generate return values
       $ret = Array();
       $ret["result"] = true;
-      $ret["data"] = Array("comment" => get_comment($comment_id), "add_or_edit" => "edit");
+      $ret["data"] = Array(
+        "comment" => get_comment($comment_id),
+        "add_or_edit" => "edit"
+      );
+      $ret["opinionCount"] = $postScores["opinionCount"];
+      $ret["opinionScore"] = $postScores["opinionScore"];
 
       hm_refreshCache($data["postId"]);
       return new WP_REST_Response($ret, 200);
