@@ -15,6 +15,23 @@ add_action( 'rest_api_init', function () {
      'methods' => 'GET',
      'callback' => 'hm_get_beers_by_brewery_id',
    ) );
+   // get beers that are trending
+   // the ones that received the best 5 or 4 stars.
+   register_rest_route( 'hops/v1', '/beers/trending', array(
+      'methods' => 'GET',
+      'callback' => 'hm_get_beers_trending',
+    ) );
+    // get most voted beers
+    register_rest_route( 'hops/v1', '/beers/mostVoted', array(
+       'methods' => 'GET',
+       'callback' => 'hm_get_beers_most_voted',
+     ) );
+     // get premium beers
+     register_rest_route( 'hops/v1', '/beers/premium', array(
+        'methods' => 'GET',
+        'callback' => 'hm_get_beers_premium',
+      ) );
+
    // set user preferences
    register_rest_route( 'hops/v1', '/updateUser', array(
       'methods' => Array('POST'),
@@ -96,6 +113,14 @@ add_action( 'rest_api_init', function () {
 
 
 } );
+
+function hm_get_beers_trending(){
+  return false;
+}
+function hm_get_beers_most_voted(){
+  return false;
+}
+
 
 function hops_add_user_comment_to_product_response($userId, $postId){
   // check if user exists
@@ -232,6 +257,10 @@ function hm_add_edit_user_comment($data){
         $ret["opinionCount"] = $postScores["opinionCount"];
         $ret["opinionScore"] = $postScores["opinionScore"];
 
+        // update post custom field to hold those values
+        update_field( 'score', $postScores["opinionScore"], $data["postId"]);
+        update_field( 'score_count', $postScores["opinionCount"], $data["postId"]);
+
         hm_refreshCache($data["postId"]);
         return new WP_REST_Response($ret, 200);
 
@@ -264,6 +293,10 @@ function hm_add_edit_user_comment($data){
       );
       $ret["opinionCount"] = $postScores["opinionCount"];
       $ret["opinionScore"] = $postScores["opinionScore"];
+
+      // update post custom field to hold those values
+      update_field( 'score', $postScores["opinionScore"], $data["postId"]);
+      update_field( 'score_count', $postScores["opinionCount"], $data["postId"]);
 
       hm_refreshCache($data["postId"]);
       return new WP_REST_Response($ret, 200);
@@ -776,9 +809,40 @@ function hm_get_user_preferences_from_id($data){
 
 }
 
+function hm_get_beers_premium($data){
+  $args = wp_parse_args( $args, array(
+      'limit' => 10,
+      'page' => 1,
+      'status' => array( 'publish' ),
+      'meta_key' => 'is_premium',
+      'meta_value' => true, //'meta_value' => array('yes'),
+      'meta_compare' => '=' //'meta_compare' => 'NOT IN'  or = or IN
+   ) );
+   $p = wc_get_products($args);
+   $products = array();
+   $userId = (isset($data["userId"]) ? $data["userId"] : "0" );
+
+   foreach ($p as $product) {
+       $a_product = $product->get_data();
+       $comments = hops_add_user_comment_to_product_response($userId, $a_product["id"]);
+
+
+       $a_product["featured_image"] = hm_get_image_src($a_product["image_id"]);
+       $a_product['user_comment'] = $comments; //try to add user comment for product if any
+
+       if (class_exists('ACF')) $a_product["bg_color"] = get_field("bg_color", $a_product["id"]);
+
+       $products[] = $a_product;
+
+
+   }
+   return new WP_REST_Response($products, 200);
+}
+
 function hm_get_beers_by_brewery_id( $data ) {
 
   $args = wp_parse_args( $args, array(
+      'limit' => -1,
       'status' => array( 'publish' ),
       'meta_key' => 'brewery',
       'meta_value' => $data['breweryID'], //'meta_value' => array('yes'),
