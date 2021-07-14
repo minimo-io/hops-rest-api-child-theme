@@ -114,13 +114,55 @@ add_action( 'rest_api_init', function () {
 
 } );
 
+// basic product filtering function
+function hm_get_beers_base_iteration($args, $data){
+
+     $p = wc_get_products($args);
+     $products = array();
+     $userId = (isset($data["userId"]) ? $data["userId"] : "0" );
+
+     foreach ($p as $product) {
+         $a_product = $product->get_data();
+         $comments = hops_add_user_comment_to_product_response($userId, $a_product["id"]);
+
+
+         $a_product["featured_image"] = hm_get_image_src($a_product["image_id"]);
+         $a_product['user_comment'] = $comments; //try to add user comment for product if any
+
+         if (class_exists('ACF')) $a_product["bg_color"] = get_field("bg_color", $a_product["id"]);
+
+         $products[] = $a_product;
+
+
+     }
+     return new WP_REST_Response($products, 200);
+
+}
+
+// those beers that have been voted last
 function hm_get_beers_trending(){
   return false;
 }
-function hm_get_beers_most_voted(){
-  return false;
-}
 
+function hm_get_beers_most_voted($data){
+
+  $args = wp_parse_args( $args, array(
+      'limit' => 10,
+      'page' => 1,
+      'status' => array( 'publish' ),
+      /*
+      'meta_key' => 'YOUR_FIELD_ID',
+      'meta_value' => array('yes'), //'meta_value' => array('yes'),
+      'meta_compare' => 'IN', //'meta_compare' => 'NOT IN'
+      */
+      'orderby' => 'meta_value_num', //'meta_compare' => 'NOT IN'
+      'order' => 'desc', //'meta_compare' => 'NOT IN'
+      'meta_key' => 'score', //'meta_compare' => 'NOT IN'
+   ) );
+
+   return hm_get_beers_base_iteration($args, $data);
+
+}
 
 function hops_add_user_comment_to_product_response($userId, $postId){
   // check if user exists
@@ -818,6 +860,8 @@ function hm_get_beers_premium($data){
       'meta_value' => true, //'meta_value' => array('yes'),
       'meta_compare' => '=' //'meta_compare' => 'NOT IN'  or = or IN
    ) );
+   return hm_get_beers_base_iteration($args, $data);
+   /*
    $p = wc_get_products($args);
    $products = array();
    $userId = (isset($data["userId"]) ? $data["userId"] : "0" );
@@ -837,6 +881,9 @@ function hm_get_beers_premium($data){
 
    }
    return new WP_REST_Response($products, 200);
+   */
+
+
 }
 
 function hm_get_beers_by_brewery_id( $data ) {
@@ -849,7 +896,8 @@ function hm_get_beers_by_brewery_id( $data ) {
       'meta_compare' => '=' //'meta_compare' => 'NOT IN'  or = or IN
    ) );
 
- //$p = wc_get_products(array('status' => 'publish', 'category' => $data['slug']));
+   return hm_get_beers_base_iteration($args, $data);
+  /*
  $p = wc_get_products($args);
   $products = array();
   $userId = (isset($data["userId"]) ? $data["userId"] : "0" );
@@ -871,6 +919,7 @@ function hm_get_beers_by_brewery_id( $data ) {
   }
 
   return new WP_REST_Response($products, 200);
+  */
 }
 
 
