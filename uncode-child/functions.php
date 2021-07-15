@@ -158,7 +158,7 @@ function hm_get_beers_trending($data){
       */
       'orderby' => 'meta_value_num', //'meta_compare' => 'NOT IN'
       'order' => 'desc', //'meta_compare' => 'NOT IN'
-      'meta_key' => 'score', //'meta_compare' => 'NOT IN'
+      'meta_key' => 'views_count', //'meta_compare' => 'NOT IN'
    ) );
 
    return hm_get_beers_base_iteration($args, $data);
