@@ -39,16 +39,22 @@ add_action( 'rest_api_init', function () {
     ) );
 
     // get user preferences custom fields
-    register_rest_route( 'hops/v1', '/getUser/userID/(?P<userId>[\d]+)/(?P<type>[a-zA-Z0-9_-]+)', array(
-       'methods' => 'GET',
-       'callback' => 'hm_get_user_preferences_from_id',
-     ) );
+  register_rest_route( 'hops/v1', '/getUser/userID/(?P<userId>[\d]+)/(?P<type>[a-zA-Z0-9_-]+)', array(
+     'methods' => 'GET',
+     'callback' => 'hm_get_user_preferences_from_id',
+   ) );
 
-     // update comment for beer or brewery
-     register_rest_route( 'hops/v1', '/updateComment', array(
-        'methods' => Array('POST'),
-        'callback' => 'hm_add_edit_user_comment',
-      ) );
+   // update comment for beer or brewery
+   register_rest_route( 'hops/v1', '/updateComment', array(
+      'methods' => Array('POST'),
+      'callback' => 'hm_add_edit_user_comment',
+    ) );
+
+  // set user preferences
+  register_rest_route( 'hops/v1', '/increaseViewsCount', array(
+     'methods' => Array('POST'),
+     'callback' => 'hm_increase_post_views_count',
+   ) );
 
 
 });
@@ -140,8 +146,22 @@ function hm_get_beers_base_iteration($args, $data){
 }
 
 // those beers that have been voted last
-function hm_get_beers_trending(){
-  return false;
+function hm_get_beers_trending($data){
+  $args = wp_parse_args( $args, array(
+      'limit' => 10,
+      'page' => 1,
+      'status' => array( 'publish' ),
+      /*
+      'meta_key' => 'YOUR_FIELD_ID',
+      'meta_value' => array('yes'), //'meta_value' => array('yes'),
+      'meta_compare' => 'IN', //'meta_compare' => 'NOT IN'
+      */
+      'orderby' => 'meta_value_num', //'meta_compare' => 'NOT IN'
+      'order' => 'desc', //'meta_compare' => 'NOT IN'
+      'meta_key' => 'score', //'meta_compare' => 'NOT IN'
+   ) );
+
+   return hm_get_beers_base_iteration($args, $data);
 }
 
 function hm_get_beers_most_voted($data){
@@ -192,20 +212,23 @@ function hops_add_user_comment_to_product_response($userId, $postId){
 
 // extend product response to add for example if user has commented.
 function hops_extend_product_response($response, $object, $request) {
-    if (empty($response->data))
-        return $response;
+    if (empty($response->data)) return $response;
+
+    $postId = $object->get_id(); //it will fetch product id
+    $userId = $request->get_param( 'userId' );
+    $postQueryId = $request->get_param( 'id' );
+
 
     $response->data['user_comment'] = Array(); // init empty
     $response->data['scores'] = Array(
       'opinionCount' => 0,
       'opinionScore' => 0.0
     );
-    $postId = $object->get_id(); //it will fetch product id
-    $userId = $request->get_param( 'userId' );
+
 
     $comments = hops_add_user_comment_to_product_response($userId, $postId);
 
-    if( empty($comments) ) return $response;
+    if( empty($comments) ) return $response; // <<<<<<<<<< WATCH
 
     $postScores = hm_post_scores($postId);
 
@@ -214,6 +237,9 @@ function hops_extend_product_response($response, $object, $request) {
       'opinionCount' => $postScores["opinionCount"],
       'opinionScore' => $postScores["opinionScore"]
     );
+
+
+
 
     return $response;
 }
@@ -356,6 +382,27 @@ function hm_add_edit_user_comment($data){
 
 }
 
+function hm_increase_post_views_count($data){
+  $data = $data->get_params();
+  $ret = Array();
+
+  $ret["result"] = false;
+  $ret["views_count"] = 0;
+  $postType = 'beer';
+
+  if (!isset($data["postId"])) return new WP_Error( 'no_user_id', 'Please provide a postId param', array( 'status' => 404 ) );
+  if (!isset($data["postType"])) $postType = $data["postType"];
+
+  // update views count
+  $viewsCount = get_field("views_count", $data["postId"]);
+  if (!$viewsCount) $viewsCount = 0;
+  $viewsCount++;
+  $ret["result"] = update_field("views_count", $viewsCount, $data["postId"]);
+  // re-assign variable
+  $ret["views_count"] = get_field("views_count", $data["postId"]);
+
+  return new WP_REST_Response($ret, 200);
+}
 
 function hops_get_the_user_ip() {
 
