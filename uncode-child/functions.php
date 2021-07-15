@@ -1,6 +1,12 @@
 <?php
 // Hops customizations for Uncode.
 
+// cronjobs
+require_once(  get_stylesheet_directory() . '/crons/resetViewsCount.inc.php'); // views_count reset
+
+
+
+
 // Enable the option show in rest
 add_filter( 'acf/rest_api/field_settings/show_in_rest', '__return_true' );
 // Enable the option edit in rest
@@ -395,9 +401,15 @@ function hm_increase_post_views_count($data){
 
   // update views count
   $viewsCount = get_field("views_count", $data["postId"]);
+  $viewsCountHistory = get_field("views_count_history", $data["postId"]);
   if (!$viewsCount) $viewsCount = 0;
+  if (!$viewsCountHistory) $viewsCountHistory = 0;
   $viewsCount++;
+  $viewsCountHistory++;
+
   $ret["result"] = update_field("views_count", $viewsCount, $data["postId"]);
+  update_field("views_count_history", $viewsCountHistory, $data["postId"]);
+
   // re-assign variable
   $ret["views_count"] = get_field("views_count", $data["postId"]);
 
