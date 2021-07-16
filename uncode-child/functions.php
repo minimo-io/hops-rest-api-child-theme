@@ -56,12 +56,20 @@ add_action( 'rest_api_init', function () {
       'callback' => 'hm_add_edit_user_comment',
     ) );
 
-  // set user preferences
+  // increase views count for pages & products
   register_rest_route( 'hops/v1', '/increaseViewsCount', array(
      'methods' => Array('POST'),
      'callback' => 'hm_increase_post_views_count',
    ) );
 
+   /*
+
+   // increase views count for pages & products
+   register_rest_route( 'hops/v1', '/getBreweries', array(
+      'methods' => Array('GET'),
+      'callback' => 'hm_get_breweries',
+    ) );
+  */
 
 });
 add_action("admin_init", "hm_beer_count_sync");
@@ -72,6 +80,7 @@ add_action( 'user_register', 'hm_define_displayname' );
 add_action( 'profile_update', 'hm_define_displayname' );
 add_filter('duplicate_comment_id', '__return_false'); // allow duplicate comments
 add_filter('woocommerce_rest_prepare_product_object', 'hops_extend_product_response', 10, 3); // extend product response
+add_filter('rest_page_query', 'order_pages_by_followers', 10, 2); // add query type to pages; followers
 // add extra field (author comment) for pages
 add_action( 'rest_api_init', function () {
     // add user_comment value to breweries (pages)
@@ -126,6 +135,46 @@ add_action( 'rest_api_init', function () {
 
 } );
 
+
+function order_pages_by_followers($args, $request) {
+    if(isset($request["orderType"]) && $request["orderType"] == "followers" ) {
+        $args['meta_key'] = 'followers';
+        $args['orderby'] = 'meta_value_num';
+        $args['order'] = 'desc';
+    }
+
+    return $args;
+}
+
+/*
+function hm_get_breweries($data){
+  $ret = Array();
+  $data = $data->get_params();
+  $orderType = "";
+
+  //if (!isset($data["updateType"])) return new WP_Error( 'no_update_type', 'Please provide an updateType to specify the preference type to update', array( 'status' => 404 ) );
+  if (isset($data["orderType"]))  $orderType = $data["orderType"];
+
+  $args = Array();
+  // filter by most followers
+  if ($data["orderType"] == "mostFollowers"){
+    $args = wp_parse_args( $args, array(
+        'limit' => 10,
+        'page' => 1,
+        'status' => array( 'publish' ),
+
+        'orderby' => 'meta_value_num', //'meta_compare' => 'NOT IN'
+        'order' => 'desc', //'meta_compare' => 'NOT IN'
+        'meta_key' => 'followers', //'meta_compare' => 'NOT IN'
+     ) );
+  }
+
+  $pages = get_pages($args);
+
+  return new WP_REST_Response($pages, 200);
+
+}
+*/
 // basic product filtering function
 function hm_get_beers_base_iteration($args, $data){
 
@@ -667,6 +716,10 @@ function hm_add_app_manifest_endpoint( $allowed_endpoints ) {
 	if ( ! isset( $allowed_endpoints[ 'hops/v1' ] ) || ! in_array( 'product', $allowed_endpoints[ 'hops/v1' ] ) ) {
 		$allowed_endpoints[ 'hops/v1' ][] = 'beers';
 	}
+  // getBreweries from custom end-point
+  if ( ! isset( $allowed_endpoints[ 'hops/v1' ] ) || ! in_array( 'page', $allowed_endpoints[ 'hops/v1' ] ) ) {
+    $allowed_endpoints[ 'hops/v1' ][] = 'getBreweries';
+  }
   // products from wc
   if ( ! isset( $allowed_endpoints[ 'wc/v3' ] ) || ! in_array( 'products', $allowed_endpoints[ 'wc/v3' ] ) ) {
       $allowed_endpoints[ 'wc/v3' ][] = 'products';
