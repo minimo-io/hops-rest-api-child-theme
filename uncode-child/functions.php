@@ -275,23 +275,24 @@ function hops_extend_product_response($response, $object, $request) {
 
 
     $response->data['user_comment'] = Array(); // init empty
+    /*
     $response->data['scores'] = Array(
       'opinionCount' => 0,
       'opinionScore' => 0.0
     );
-
-
-    $comments = hops_add_user_comment_to_product_response($userId, $postId);
-
-    if( empty($comments) ) return $response; // <<<<<<<<<< WATCH
-
+    */
+    
     $postScores = hm_post_scores($postId);
-
-    $response->data['user_comment'] = $comments;
     $response->data['scores'] = Array(
       'opinionCount' => $postScores["opinionCount"],
       'opinionScore' => $postScores["opinionScore"]
     );
+
+
+
+    $comments = hops_add_user_comment_to_product_response($userId, $postId);
+    if( empty($comments) ) return $response; // <<<<<<<<<< WATCH
+    $response->data['user_comment'] = $comments;
 
 
 
