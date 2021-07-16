@@ -190,6 +190,13 @@ function hm_get_beers_base_iteration($args, $data){
          $a_product["featured_image"] = hm_get_image_src($a_product["image_id"]);
          $a_product['user_comment'] = $comments; //try to add user comment for product if any
 
+         $postScores = hm_post_scores($a_product["id"]);
+         $a_product['scores'] = Array(
+           'opinionCount' => $postScores["opinionCount"],
+           'opinionScore' => $postScores["opinionScore"]
+         );
+
+
          if (class_exists('ACF')) $a_product["bg_color"] = get_field("bg_color", $a_product["id"]);
 
          $products[] = $a_product;
@@ -281,7 +288,7 @@ function hops_extend_product_response($response, $object, $request) {
       'opinionScore' => 0.0
     );
     */
-    
+
     $postScores = hm_post_scores($postId);
     $response->data['scores'] = Array(
       'opinionCount' => $postScores["opinionCount"],
