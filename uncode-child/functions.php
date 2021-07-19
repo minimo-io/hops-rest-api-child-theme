@@ -196,6 +196,15 @@ function hm_get_beers_base_iteration($args, $data){
            'opinionScore' => $postScores["opinionScore"]
          );
 
+        $a_product['acf'] = get_fields($a_product["id"]);
+        $categories = get_the_terms( $a_product["id"], 'product_cat' );
+        $new_categories = Array();
+        foreach ($categories as $term) {
+            $a_term = (array)$term;
+            $a_term["id"] = $a_term["term_id"];
+            $new_categories[] = $a_term;
+        }
+        $a_product['categories'] = $new_categories;
 
          if (class_exists('ACF')) $a_product["bg_color"] = get_field("bg_color", $a_product["id"]);
 
