@@ -206,6 +206,9 @@ function hm_get_beers_base_iteration($args, $data){
         }
         $a_product['categories'] = $new_categories;
 
+        $brewery = get_field("brewery", $a_product["id"]);
+        $a_product['brewery_whatsapp'] = get_field("whatsapp", $brewery->ID);
+
          if (class_exists('ACF')) $a_product["bg_color"] = get_field("bg_color", $a_product["id"]);
 
          $products[] = $a_product;
@@ -291,6 +294,14 @@ function hops_extend_product_response($response, $object, $request) {
 
 
     $response->data['user_comment'] = Array(); // init empty
+
+    $breweryFromThisPostId = $postId;
+    if ($postQueryId) $breweryFromThisPostId = $postQueryId;
+
+    $brewery = get_field("brewery", $breweryFromThisPostId);
+    $response->data['brewery_whatsapp'] = get_field("whatsapp", $brewery->ID);
+
+
     /*
     $response->data['scores'] = Array(
       'opinionCount' => 0,
