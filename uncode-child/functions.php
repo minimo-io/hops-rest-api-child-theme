@@ -223,7 +223,7 @@ function hm_get_beers_base_iteration($args, $data){
 function hm_get_beers_trending($data){
   $args = wp_parse_args( $args, array(
       'limit' => 10,
-      'page' => 1,
+      'page' => $data["page"],
       'status' => array( 'publish' ),
       /*
       'meta_key' => 'YOUR_FIELD_ID',
@@ -242,7 +242,7 @@ function hm_get_beers_most_voted($data){
 
   $args = wp_parse_args( $args, array(
       'limit' => 10,
-      'page' => 1,
+      'page' => $data["page"],
       'status' => array( 'publish' ),
       /*
       'meta_key' => 'YOUR_FIELD_ID',
@@ -994,7 +994,7 @@ function hm_get_user_preferences_from_id($data){
 function hm_get_beers_premium($data){
   $args = wp_parse_args( $args, array(
       'limit' => 10,
-      'page' => 1,
+      'page' => $data["page"],
       'status' => array( 'publish' ),
       'meta_key' => 'is_premium',
       'meta_value' => true, //'meta_value' => array('yes'),
