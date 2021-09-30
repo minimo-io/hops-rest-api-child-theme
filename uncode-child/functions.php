@@ -3,6 +3,10 @@
 
 // cronjobs
 require_once(  get_stylesheet_directory() . '/crons/resetViewsCount.inc.php'); // views_count reset
+// shortcodes
+require_once(  get_stylesheet_directory() . '/shortcodes/breweryBox.inc.php');
+require_once(  get_stylesheet_directory() . '/shortcodes/followers.inc.php');
+require_once(  get_stylesheet_directory() . '/shortcodes/beerDetails.inc.php');
 
 
 
