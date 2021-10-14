@@ -84,7 +84,7 @@ add_action( 'user_register', 'hm_define_displayname' );
 add_action( 'profile_update', 'hm_define_displayname' );
 add_filter('duplicate_comment_id', '__return_false'); // allow duplicate comments
 add_filter('woocommerce_rest_prepare_product_object', 'hops_extend_product_response', 10, 3); // extend product response
-add_filter('rest_page_query', 'order_pages_by_followers', 10, 2); // add query type to pages; followers
+add_filter('rest_page_query', 'order_pages_by_followers', 10, 3); // add query type to pages; followers
 // add extra field (author comment) for pages
 add_action( 'rest_api_init', function () {
     // add user_comment value to breweries (pages)
