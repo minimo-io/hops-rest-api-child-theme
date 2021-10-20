@@ -8,6 +8,7 @@ require_once(  get_stylesheet_directory() . '/shortcodes/breweryBox.inc.php');
 require_once(  get_stylesheet_directory() . '/shortcodes/followers.inc.php');
 require_once(  get_stylesheet_directory() . '/shortcodes/beerDetails.inc.php');
 
+define("HM_ADD_COMMENT_SCORE_POINTS", 10);
 
 
 
@@ -357,6 +358,23 @@ function hm_post_scores($postId){
   );
 
 }
+// add or subtract score to user
+// @date 19/10/2021
+// @author minimo
+function hm_update_user_score($userId, $operation = "add", $value = 0){
+
+  $oldScore = get_field("score", "user_".$userId);
+  if (!is_numeric($oldScore)){
+    $oldScore = 0;
+  }
+  $newScore = $oldScore;
+  if ($operation == "add"){
+    $newScore += $value;
+  }else if($operation == "subtract"){
+    $newScore -= $value;
+  }
+  return update_field("score", $newScore , "user_".$userId);
+}
 
 function hm_add_edit_user_comment($data){
 
@@ -390,6 +408,7 @@ function hm_add_edit_user_comment($data){
         'comment_approved' => 1,
     );
 
+    // add comment
     if ( !isset($data["commentId"]) || $data["commentId"] == "0" ){
 
       //$comment_id = wp_insert_comment($data);
@@ -415,6 +434,7 @@ function hm_add_edit_user_comment($data){
         // update post custom field to hold those values
         update_field( 'score', $postScores["opinionScore"], $data["postId"]);
         update_field( 'score_count', $postScores["opinionCount"], $data["postId"]);
+        hm_update_user_score($data["userId"], "add", HM_ADD_COMMENT_SCORE_POINTS);
 
         hm_refreshCache($data["postId"]);
         return new WP_REST_Response($ret, 200);
