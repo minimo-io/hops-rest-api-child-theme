@@ -8,7 +8,8 @@ require_once(  get_stylesheet_directory() . '/shortcodes/breweryBox.inc.php');
 require_once(  get_stylesheet_directory() . '/shortcodes/followers.inc.php');
 require_once(  get_stylesheet_directory() . '/shortcodes/beerDetails.inc.php');
 
-define("HM_ADD_COMMENT_SCORE_POINTS", 10);
+define("HM_ADD_COMMENT_SCORE_POINTS", 1);
+define("HM_ADD_COMMENT_ORDER_POINTS", 10);
 
 
 
@@ -81,10 +82,12 @@ add_action("admin_init", "hm_beer_count_sync");
 add_action('save_post', 'hm_refreshCache', 1); // clear REST cache after save
 add_filter( 'avatar_defaults', 'hm_modify_default_avatar' ); // change default avatar
 
+
 add_action( 'user_register', 'hm_define_displayname' );
 add_action( 'profile_update', 'hm_define_displayname' );
 add_filter('duplicate_comment_id', '__return_false'); // allow duplicate comments
 add_filter('woocommerce_rest_prepare_product_object', 'hops_extend_product_response', 10, 3); // extend product response
+add_action( 'woocommerce_new_order', 'hm_on_new_order',  1, 1  ); // on new order: assign user new points score
 add_filter('rest_page_query', 'order_pages_by_followers', 10, 3); // add query type to pages; followers
 // add extra field (author comment) for pages
 add_action( 'rest_api_init', function () {
@@ -140,6 +143,13 @@ add_action( 'rest_api_init', function () {
 
 } );
 
+
+function hm_on_new_order($order_id) {
+  $order = new WC_Order( $order_id );
+  $userId = $order->get_customer_id();
+  hm_update_user_score($userId, "add", HM_ADD_COMMENT_ORDER_POINTS);
+
+}
 
 function order_pages_by_followers($args, $request) {
     if(isset($request["orderType"]) && $request["orderType"] == "followers" ) {
