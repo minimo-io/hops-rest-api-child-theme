@@ -60,3 +60,17 @@ Text Domain: uncode
   font-size: 1rem;
   border: 0;
 }
+
+
+
+@media (max-width: 569px){
+  .hero-message-download-button{
+    transform-origin: center !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+  .hero-message-title{
+    font-size:17px !important;
+    line-height: 1.5rem !important;
+  }
+}
