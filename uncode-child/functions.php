@@ -12,7 +12,8 @@ define("HM_ADD_COMMENT_SCORE_POINTS", 1);
 define("HM_ADD_COMMENT_ORDER_POINTS", 10);
 
 
-
+// Analytics & Clarity when not admin
+add_action('wp_head', 'hops_add_analytics');
 // Enable the option show in rest
 add_filter( 'acf/rest_api/field_settings/show_in_rest', '__return_true' );
 // Enable the option edit in rest
@@ -159,6 +160,33 @@ function order_pages_by_followers($args, $request) {
     }
 
     return $args;
+}
+
+function hops_add_analytics() {
+  if (
+    !is_admin()
+    && !current_user_can( 'manage_options' ) 
+){
+  ?>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LCREXEMMFK"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-LCREXEMMFK');
+  </script>
+  <!-- Clarity -->
+  <script type="text/javascript">
+      (function(c,l,a,r,i,t,y){
+          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "9dgec1sxx9");
+  </script>
+  <?php
+  }
 }
 
 /*
