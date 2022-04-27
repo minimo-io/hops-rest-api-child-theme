@@ -7,8 +7,6 @@ require_once(  get_stylesheet_directory() . '/crons/resetViewsCount.inc.php'); /
 require_once(  get_stylesheet_directory() . '/shortcodes/breweryBox.inc.php');
 require_once(  get_stylesheet_directory() . '/shortcodes/followers.inc.php');
 require_once(  get_stylesheet_directory() . '/shortcodes/beerDetails.inc.php');
-// other includes
-require_once(  get_stylesheet_directory() . '/includes/notifications.inc.php');
 
 define("HM_ADD_COMMENT_SCORE_POINTS", 1);
 define("HM_ADD_COMMENT_ORDER_POINTS", 10);
@@ -172,11 +170,6 @@ function order_pages_by_followers($args, $request) {
 }
 
 function hops_add_analytics() {
-
-  ?>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7735506494543399" crossorigin="anonymous"></script>
-
-  <?php
   if (
     !is_admin()
     && !current_user_can( 'manage_options' )
@@ -246,7 +239,6 @@ function hm_get_beers_base_iteration($args, $data){
 
          $a_product["featured_image"] = hm_get_image_src($a_product["image_id"]);
          $a_product['user_comment'] = $comments; //try to add user comment for product if any
-
 
          $postScores = hm_post_scores($a_product["id"]);
          $a_product['scores'] = Array(
@@ -352,43 +344,6 @@ function hops_extend_product_response($response, $object, $request) {
 
 
     $response->data['user_comment'] = Array(); // init empty
-
-    /*
-    $response->data['stores_data'] = Array(
-      Array("image" => '', "name" => "", "id" => 29348)
-    );
-    */
-
-    $response->data['stores'] = Array();
-    $productStores = get_field("stores", $postId);
-    $productStoresPrices = get_field("store_products_prices", $postId);
-    $productStoresUrls = get_field("stores_products_urls", $postId);
-    $productStoresPricesLastUpdate = get_field("stores_prices_last_update", $postId);
-
-    // $response->data['stores']['prices_last_update'] = $productStoresPricesLastUpdate;
-    $storeIndex = 0;
-    foreach ( $productStores as $store){
-      $aStore = (array)$store;
-
-
-      $finalStore["id"] = (string)$aStore["ID"];
-      $finalStore["name"] = $aStore["post_title"];
-      //$storeThumbnail = wp_get_attachment_image_src( get_post_thumbnail_id( $finalStore["id"] ));
-      $storeThumbnail = get_the_post_thumbnail_url( $finalStore["id"], 'full');
-
-      $finalStore["price"] = (isset($productStoresPrices[$storeIndex]) ? $productStoresPrices[$storeIndex] : "" );
-      $finalStore["price_last_update"] = $productStoresPricesLastUpdate; // general now, might be store by store in the future
-      $finalStore["url"] = (isset($productStoresUrls[$storeIndex]) ? $productStoresUrls[$storeIndex] : "" );
-
-      $isStoreVerified = get_field("is_verified", $aStore["ID"]);
-      $finalStore["is_verified"] = ($isStoreVerified == true ? "true" : "false");
-
-      $finalStore["image"] = $storeThumbnail;
-
-      $response->data['stores'][] = $finalStore;
-      $storeIndex++;
-    }
-
 
     $breweryFromThisPostId = $postId;
     if ($postQueryId) $breweryFromThisPostId = $postQueryId;
