@@ -8,6 +8,7 @@ require_once(  get_stylesheet_directory() . '/shortcodes/breweryBox.inc.php');
 require_once(  get_stylesheet_directory() . '/shortcodes/followers.inc.php');
 require_once(  get_stylesheet_directory() . '/shortcodes/beerDetails.inc.php');
 require_once(  get_stylesheet_directory() . '/shortcodes/beerOnlineStores.inc.php');
+require_once(  get_stylesheet_directory() . '/shortcodes/storeMetaBox.inc.php');
 // other includes
 require_once(  get_stylesheet_directory() . '/includes/notifications.inc.php');
 
