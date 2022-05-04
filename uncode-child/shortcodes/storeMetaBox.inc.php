@@ -76,15 +76,17 @@ function hops_store_status( $atts, $content = "" ) {
 
     if ($atts['type'] == 'verified-box'){
       $storeIsVerified = get_field("is_verified", $postID);
-      $storeIsOnline = get_field("is_offline", $postID);
+      $storeIsOffline = get_field("is_offline", $postID);
 
 
       $storeMessage = '<i class="fa '.($storeIsVerified ? 'fa-check-circle' : 'fa-times-circle' ).'" '.($storeIsVerified ? 'style="color:#3BA2F2;' : '' ).'" aria-hidden="true"></i> '.($storeIsVerified ? "Verificada" : "No verificada" );
 
       $storeMessage .= "&nbsp;&nbsp;";
-      $storeMessage .= '<i class="fa fa-check-circle" style="color:#43cb83;" aria-hidden="true"></i> Online';
+
       if ($storeIsOffline){
         $storeMessage .= '<i class="fa fa-times-circle" aria-hidden="true"></i> Offline';
+      }else{
+        $storeMessage .= '<i class="fa fa-check-circle" style="color:#43cb83;" aria-hidden="true"></i> Online';
       }
     }else if($atts['type'] == 'last-crawl'){
       $storeLastCrawl = get_field("last_crawl", $postID);
