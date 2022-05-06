@@ -16,10 +16,21 @@ function hops_beer_followers( $atts, $content = "" ) {
   if (class_exists('ACF')) {
     $postID = get_the_ID();
     $beerFollowers = get_field("followers", $postID);
+    $beerABV = get_field("abv", $postID);
+    $beerIBU = get_field("ibu", $postID);
+    if (!$beerIBU) $beerIBU = "N/A";
 
-    $ret .= '<div class="vc_acf vc_txt_align_center breweryFollowers">
-                '.$beerFollowers.' seguidor'.($beerFollowers != 1 ? "es" : "").'
-             </div>';
+    $ret .= '<div class="beersPillBox">';
+      $ret .= '<div class="vc_acf vc_txt_align_center XbreweryFollowers beerPill">
+                  '.$beerFollowers.' seguidor'.($beerFollowers != 1 ? "es" : "").'
+               </div>';
+      $ret .= '<div class="vc_acf vc_txt_align_center XbreweryFollowers beerPill">
+                 '.$beerABV.' ABV
+              </div>';
+      $ret .= '<div class="vc_acf vc_txt_align_center XbreweryFollowers beerPill">
+                  '.$beerIBU.' IBU
+               </div>';
+    $ret .= '</div>';
     //var_dump($brewery);
   }
 

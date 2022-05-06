@@ -17,6 +17,9 @@ function hops_beer_online_stores( $atts, $content = "" ) {
 	), $atts, 'short_alert' );
 
 
+  $product = wc_get_product( $post->ID );
+
+
   if (class_exists('ACF')) {
     $postID = get_the_ID();
 
@@ -25,18 +28,68 @@ function hops_beer_online_stores( $atts, $content = "" ) {
     $storesProductsPrinces = get_field("store_products_prices", $postID);
     $storesPricesLastUpdate = get_field("stores_prices_last_update", $postID);
 
-    echo do_shortcode('[vc_row_inner]
+    echo do_shortcode('[vc_row_inner el_id="compra"]
                           [vc_column_inner column_width_use_pixel="yes" align_horizontal="align_center" gutter_size="3" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="0" mobile_width="0" width="1/1" column_width_pixel="700"]
-                            [vc_custom_heading '.($storesPricesLastUpdate ? 'subheading="Última actualización: '.$storesPricesLastUpdate.'" sub_lead="small" sub_reduced="yes"' : '').' heading_semantic="h3" text_font="font-762333" text_size="h1" sub_lead="yes"]
-                              Tiendas online
+                            [vc_custom_heading heading_semantic="h3" text_font="font-762333" text_size="h1" sub_lead="no"]
+                              Compra online
                             [/vc_custom_heading]
                           [/vc_column_inner]
                         [/vc_row_inner]');
 
     //echo do_shortcode('[vc_empty_space empty_h="2"][vc_separator sep_color=",Default"]');
 
+    $addToCartButton = do_shortcode('[vc_button dynamic="add-to-cart" quantity="variation" size="btn-lg" radius="btn-round" border_animation="btn-ripple-out" hover_fx="full-colored" shadow="yes" border_width="0" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" wide="yes" border_width="0" button_color="color-742106" display="inline" uncode_shortcode_id="'.get_the_ID().'" el_class="Xhm-beer-buy-button"]Text on the button[/vc_button]');
+
+
+    $ret .= do_shortcode('
+            [vc_separator sep_color=",Default"][vc_empty_space empty_h="1"]
+
+            [vc_row_inner el_class="onlineStoreItem hopsProductAddToCartOption" row_inner_height_percent="0" overlay_alpha="50" equal_height="yes" gutter_size="3" shift_y="0" z_index="0"]
+                [vc_column_inner column_width_percent="100" position_vertical="middle" gutter_size="2" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="2" align_mobile="align_center_mobile" mobile_width="3" width="1/4"]
+
+                  <table class="no-border" border="0" style="border:0;">
+                    <tr>
+                      <td style="padding-right:10px;">
+                        <img src="https://hops.uy/wp-content/uploads/2022/05/hops-logo-border.png" style="width:50px;min-width:50px;">
+                      </td>
+                      <td>
+                        [vc_custom_heading heading_semantic="h6" text_size="h2"]
+                            Hops
+                        [/vc_custom_heading]
+                      </td>
+                    </tr>
+                  </table>
+
+
+
+                [/vc_column_inner]
+              [vc_column_inner column_width_percent="100" position_vertical="middle" gutter_size="3" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="2" align_mobile="align_center_mobile" mobile_width="3" width="1/4"]
+                [vc_custom_heading heading_semantic="h6" text_size="h2"]
+                  '.($product ? '$'.$product->get_price() : "-").'
+                [/vc_custom_heading]
+              [/vc_column_inner]
+
+
+              [vc_column_inner el_class="storeBuyButtonColumn" column_width_percent="100" position_vertical="middle" align_horizontal="align_right" gutter_size="3" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="2" align_mobile="align_left_mobile" mobile_width="3" width="2/4"]
+
+              '.$addToCartButton.'
+
+            [/vc_column_inner]
+          [/vc_row_inner]
+
+          [vc_row_inner row_inner_height_percent="0" overlay_alpha="50" equal_height="yes" gutter_size="3" shift_y="0" z_index="0"]
+              [vc_column_inner column_width_percent="100" position_vertical="middle" gutter_size="2" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="4" align_mobile="align_right_mobile"]
+                [vc_empty_space empty_h="1"]
+                  <p class="text-center">Comprando a través de la app de HOPS ganás puntos canjeables por descuentos en los bares asociados.</p>
+                [vc_empty_space empty_h="1"]
+              [/vc_column_inner]
+          [/vc_row_inner]
+
+          [vc_empty_space empty_h="1"][vc_separator sep_color=",Default"][vc_empty_space empty_h="1"]');
+
     $itemKey = 0;
     foreach($stores as $store){
+
       $storeName = $store->post_title;
       $storeImage = get_the_post_thumbnail_url($store->ID);
       $storeImageId = get_post_thumbnail_id($store->ID);
@@ -62,8 +115,6 @@ function hops_beer_online_stores( $atts, $content = "" ) {
                       <tr>
                         <td style="padding-right:10px;">
                           <img src="'.$storeImage.'" style="width:50px;min-width:50px;">
-                          <!--[vc_single_image media="'.$storeImageId.'" media_width_use_pixel="yes" shape="img-circle" media_width_pixel="50"]-->
-
                         </td>
                         <td>
                           [vc_custom_heading heading_semantic="h6" text_size="h4"]
@@ -97,7 +148,9 @@ function hops_beer_online_stores( $atts, $content = "" ) {
               [/vc_column_inner]
             [/vc_row_inner]
 
-            [vc_separator sep_color=",Default"]');
+
+
+            [vc_empty_space empty_h="1"][vc_separator sep_color=",Default"][vc_empty_space empty_h="1"]');
 
 
 
@@ -108,10 +161,11 @@ function hops_beer_online_stores( $atts, $content = "" ) {
       $itemKey++;
     }
 
+    $ret .= ($storesPricesLastUpdate ? 'Última actualización: '.$storesPricesLastUpdate : '');
 
     // no stores, then hide the block
     if ($itemKey == 0){
-      $ret .= "<div style='text-align:center;'>".__("No existen tiendas online con este producto")."</div>";
+      $ret .= "<div style='text-align:center;'>".__("No existen otras tiendas online con este producto")."</div>";
     }
 
 
