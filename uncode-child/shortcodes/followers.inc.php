@@ -53,7 +53,7 @@ function hops_brewery_followers( $atts, $content = "" ) {
     $brewery = get_field("brewery", $postID);
     $breweryFollowers = get_field("followers", $brewery);
 
-    $ret .= '<div class="vc_acf vc_txt_align_center breweryFollowers">
+    $ret .= '<div class="vc_acf vc_txt_align_center breweryFollowers" style="margin:auto;">
                 '.$breweryFollowers.' seguidor'.($breweryFollowers != 1 ? "es" : "").'
              </div>';
     //var_dump($brewery);
