@@ -40,52 +40,54 @@ function hops_beer_online_stores( $atts, $content = "" ) {
 
     $addToCartButton = do_shortcode('[vc_button dynamic="add-to-cart" quantity="variation" size="btn-lg" radius="btn-round" border_animation="btn-ripple-out" hover_fx="full-colored" shadow="yes" border_width="0" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" wide="yes" border_width="0" button_color="color-742106" display="inline" uncode_shortcode_id="'.get_the_ID().'" el_class="Xhm-beer-buy-button"]Text on the button[/vc_button]');
 
+    if (isset($product) && $product->is_in_stock()){
+      $ret .= do_shortcode('
+              [vc_separator sep_color=",Default"][vc_empty_space empty_h="1"]
 
-    $ret .= do_shortcode('
-            [vc_separator sep_color=",Default"][vc_empty_space empty_h="1"]
+              [vc_row_inner el_class="onlineStoreItem hopsProductAddToCartOption" row_inner_height_percent="0" overlay_alpha="50" equal_height="yes" gutter_size="3" shift_y="0" z_index="0"]
+                  [vc_column_inner column_width_percent="100" position_vertical="middle" gutter_size="2" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="2" align_mobile="align_center_mobile" mobile_width="3" width="1/4"]
 
-            [vc_row_inner el_class="onlineStoreItem hopsProductAddToCartOption" row_inner_height_percent="0" overlay_alpha="50" equal_height="yes" gutter_size="3" shift_y="0" z_index="0"]
-                [vc_column_inner column_width_percent="100" position_vertical="middle" gutter_size="2" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="2" align_mobile="align_center_mobile" mobile_width="3" width="1/4"]
-
-                  <table class="no-border" border="0" style="border:0;">
-                    <tr>
-                      <td style="padding-right:10px;">
-                        <img src="https://hops.uy/wp-content/uploads/2022/05/hops-logo-border.png" style="width:50px;min-width:50px;">
-                      </td>
-                      <td>
-                        [vc_custom_heading heading_semantic="h6" text_size="h2"]
-                            Hops
-                        [/vc_custom_heading]
-                      </td>
-                    </tr>
-                  </table>
+                    <table class="no-border" border="0" style="border:0;">
+                      <tr>
+                        <td style="padding-right:10px;">
+                          <img src="https://hops.uy/wp-content/uploads/2022/05/hops-logo-border.png" style="width:50px;min-width:50px;">
+                        </td>
+                        <td>
+                          [vc_custom_heading heading_semantic="h6" text_size="h2"]
+                              Hops
+                          [/vc_custom_heading]
+                        </td>
+                      </tr>
+                    </table>
 
 
 
+                  [/vc_column_inner]
+                [vc_column_inner column_width_percent="100" position_vertical="middle" gutter_size="3" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="2" align_mobile="align_center_mobile" mobile_width="3" width="1/4"]
+                  [vc_custom_heading heading_semantic="h6" text_size="h2"]
+                    '.($product ? '$'.$product->get_price() : "-").'
+                  [/vc_custom_heading]
                 [/vc_column_inner]
-              [vc_column_inner column_width_percent="100" position_vertical="middle" gutter_size="3" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="2" align_mobile="align_center_mobile" mobile_width="3" width="1/4"]
-                [vc_custom_heading heading_semantic="h6" text_size="h2"]
-                  '.($product ? '$'.$product->get_price() : "-").'
-                [/vc_custom_heading]
+
+
+                [vc_column_inner el_class="storeBuyButtonColumn" column_width_percent="100" position_vertical="middle" align_horizontal="align_right" gutter_size="3" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="2" align_mobile="align_left_mobile" mobile_width="3" width="2/4"]
+
+                '.$addToCartButton.'
+
               [/vc_column_inner]
+            [/vc_row_inner]
 
+            [vc_row_inner row_inner_height_percent="0" overlay_alpha="50" equal_height="yes" gutter_size="3" shift_y="0" z_index="0"]
+                [vc_column_inner column_width_percent="100" position_vertical="middle" gutter_size="2" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="4" align_mobile="align_right_mobile"]
+                  [vc_empty_space empty_h="1"]
+                    <p class="text-center">Comprando a través de la app de HOPS ganás puntos canjeables por descuentos en los bares asociados.</p>
+                  [vc_empty_space empty_h="1"]
+                [/vc_column_inner]
+            [/vc_row_inner]
 
-              [vc_column_inner el_class="storeBuyButtonColumn" column_width_percent="100" position_vertical="middle" align_horizontal="align_right" gutter_size="3" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="2" align_mobile="align_left_mobile" mobile_width="3" width="2/4"]
+            [vc_empty_space empty_h="1"][vc_separator sep_color=",Default"][vc_empty_space empty_h="1"]');
+    }
 
-              '.$addToCartButton.'
-
-            [/vc_column_inner]
-          [/vc_row_inner]
-
-          [vc_row_inner row_inner_height_percent="0" overlay_alpha="50" equal_height="yes" gutter_size="3" shift_y="0" z_index="0"]
-              [vc_column_inner column_width_percent="100" position_vertical="middle" gutter_size="2" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="4" align_mobile="align_right_mobile"]
-                [vc_empty_space empty_h="1"]
-                  <p class="text-center">Comprando a través de la app de HOPS ganás puntos canjeables por descuentos en los bares asociados.</p>
-                [vc_empty_space empty_h="1"]
-              [/vc_column_inner]
-          [/vc_row_inner]
-
-          [vc_empty_space empty_h="1"][vc_separator sep_color=",Default"][vc_empty_space empty_h="1"]');
 
     $itemKey = 0;
     foreach($stores as $store){
