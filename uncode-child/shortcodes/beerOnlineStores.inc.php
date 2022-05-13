@@ -32,7 +32,7 @@ function hops_beer_online_stores( $atts, $content = "" ) {
                           [vc_column_inner column_width_use_pixel="yes" align_horizontal="align_center" gutter_size="3" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="0" mobile_width="0" width="1/1" column_width_pixel="700"]
                             [vc_custom_heading heading_semantic="h3" text_font="font-762333" text_size="h1" sub_lead="no"]
                               Compra online
-                              <p class="text-center"><i class="fa fa-bell" aria-hidden="true"></i> Recuerda que comprando a través de la app de HOPS ganás puntos canjeables por descuentos en los bares asociados.</p>
+                              <p class="text-center"><i class="fa fa-bell" aria-hidden="true"></i> Recordá que comprando a través de la app de HOPS ganás puntos canjeables por descuentos en los bares asociados.</p>
                             [/vc_custom_heading]
 
                           [/vc_column_inner]
@@ -167,7 +167,13 @@ function hops_beer_online_stores( $atts, $content = "" ) {
 
     // no stores, then hide the block
     if ($itemKey == 0){
-      $ret .= "<div style='text-align:center;'>".__("No existen otras tiendas online con este producto")."</div>";
+      $ret .= "<div style='text-align:center;'>
+                ".__("No existen otras tiendas online con este producto")."
+                <br>
+                Si sos una cervecería con <a href='/tiendas/'>tienda o un delivery online</a> integrate a HOPS
+                <br>
+                ". __("y ampliá tus visibilidad ¡Es gratis!")."
+              </div>";
     }
 
 
