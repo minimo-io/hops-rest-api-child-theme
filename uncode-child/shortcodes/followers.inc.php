@@ -21,13 +21,13 @@ function hops_beer_followers( $atts, $content = "" ) {
     if (!$beerIBU) $beerIBU = "N/A";
 
     $ret .= '<div class="beersPillBox">';
-      $ret .= '<div class="vc_acf vc_txt_align_center XbreweryFollowers beerPill">
+      $ret .= '<div class="vc_acf vc_txt_align_center beerPill">
                   '.$beerFollowers.' seguidor'.($beerFollowers != 1 ? "es" : "").'
                </div>';
-      $ret .= '<div class="vc_acf vc_txt_align_center XbreweryFollowers beerPill">
+      $ret .= '<div class="vc_acf vc_txt_align_center beerPill">
                  '.$beerABV.' ABV
               </div>';
-      $ret .= '<div class="vc_acf vc_txt_align_center XbreweryFollowers beerPill">
+      $ret .= '<div class="vc_acf vc_txt_align_center beerPill">
                   '.$beerIBU.' IBU
                </div>';
     $ret .= '</div>';
@@ -53,9 +53,24 @@ function hops_brewery_followers( $atts, $content = "" ) {
     $brewery = get_field("brewery", $postID);
     $breweryFollowers = get_field("followers", $brewery);
 
-    $ret .= '<div class="vc_acf vc_txt_align_center breweryFollowers" style="margin:auto;">
-                '.$breweryFollowers.' seguidor'.($breweryFollowers != 1 ? "es" : "").'
-             </div>';
+    $ret .= '<div class="storeMetaBox followButtonMetaBox" style="margin:auto;">';
+      $ret .= '<div class="vc_acf vc_txt_align_center breweryFollowersUnique" >
+                  '.$breweryFollowers.' seguidor'.($breweryFollowers != 1 ? "es" : "").'
+               </div>';
+     $ret .= do_shortcode('
+             [vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode("https://hops.uy/app/").'||target:_blank|" size="btn-lg" radius="btn-circle" hover_fx="full-colored" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" border_width="0" display="inline" inline_mobile="yes" el_class="hm-beer-buy-button storeButtonWhatsapp btn-outline"]
+               <i class="fa fa-heart-o" aria-hidden="true"></i>Seguir
+             [/vc_button]
+          ');
+    $ret .= '</div>';
+
+      // $ret .= '<div class="vc_acf vc_txt_align_center breweryFollowers" style="margin:auto;">
+      //             '.$breweryFollowers.' seguidor'.($breweryFollowers != 1 ? "es" : "").'
+      //          </div>';
+
+
+
+
     //var_dump($brewery);
   }
 
