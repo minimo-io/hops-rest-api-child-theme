@@ -26,6 +26,9 @@ add_action('after_setup_theme', 'uncode_language_setup');
 remove_filter('the_excerpt', 'wpautop');
 add_filter( 'wp_rest_cache/allowed_endpoints', 'hm_add_app_manifest_endpoint', 10, 1 );
 add_filter('woocommerce_short_description', 'hm_woocommerce_short_description',10, 1);
+
+
+// move this ones to their own sub-folder for custom rest api calls
 add_action( 'rest_api_init', function () {
   // get beers by brewery
   register_rest_route( 'hops/v1', '/beers/breweryID/(?P<breweryID>[^/]+)', array(
@@ -90,6 +93,9 @@ add_action( 'rest_api_init', function () {
   */
 
 });
+// add custom calls to REST API
+require_once(  get_stylesheet_directory() . '/includes/rest-customs/order-by-ibu.inc.php');
+
 add_action("admin_init", "hm_beer_count_sync");
 add_action('save_post', 'hm_refreshCache', 1); // clear REST cache after save
 add_filter( 'avatar_defaults', 'hm_modify_default_avatar' ); // change default avatar
@@ -1146,6 +1152,8 @@ function hm_get_beers_premium($data){
 
 
 }
+
+
 
 function hm_get_beers_by_brewery_id( $data ) {
 
