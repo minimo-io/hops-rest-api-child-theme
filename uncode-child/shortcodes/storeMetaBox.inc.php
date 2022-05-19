@@ -32,14 +32,14 @@ function hops_store_metabox( $atts, $content = "" ) {
               $storeInstagram = "https://www.instagram.com/".$storeInstagram."/";
               $ret .= do_shortcode('
                 [vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode($storeInstagram).'||target:_blank|" size="btn-lg" radius="btn-circle" hover_fx="full-colored" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" border_width="0" display="inline" inline_mobile="yes" el_class="hm-beer-buy-button storeButtonWhatsapp btn-outline"]
-                  <i class="fa fa-instagram" aria-hidden="true" style="margin-right:0;"></i>
+                  <i class="fa fa-instagram" aria-hidden="true" style="Xmargin-right:0;"></i>Seguir
                 [/vc_button]
               ');
             }
             if ($storeWhatsapp && !$storeInstagram){
               $ret .= do_shortcode('
                 [vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode($whatsappLink).'||target:_blank|" size="btn-lg" radius="btn-circle" hover_fx="full-colored" custom_typo="yes" font_family="font-156269" outline="yes" font_weight="600" text_transform="uppercase" border_width="0" display="inline" inline_mobile="yes" el_class="hm-beer-buy-button storeButtonWhatsapp btn-outline"]
-                  <i class="fa fa-whatsapp" aria-hidden="true" style="margin-right:0;"></i>
+                  <i class="fa fa-whatsapp" aria-hidden="true" style="Xmargin-right:0;"></i>Contactar
                 [/vc_button]
               ');
             }
