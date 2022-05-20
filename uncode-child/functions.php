@@ -28,6 +28,11 @@ add_filter( 'wp_rest_cache/allowed_endpoints', 'hm_add_app_manifest_endpoint', 1
 add_filter('woocommerce_short_description', 'hm_woocommerce_short_description',10, 1);
 
 
+// add custom calls to REST API
+require_once(  get_stylesheet_directory() . '/includes/rest-customs/order-by-ibu.inc.php');
+require_once(  get_stylesheet_directory() . '/includes/rest-customs/order-beers-by-price.inc.php');
+require_once(  get_stylesheet_directory() . '/includes/rest-customs/order-beers-by-abv.inc.php');
+
 // move this ones to their own sub-folder for custom rest api calls
 add_action( 'rest_api_init', function () {
   // get beers by brewery
@@ -93,8 +98,7 @@ add_action( 'rest_api_init', function () {
   */
 
 });
-// add custom calls to REST API
-require_once(  get_stylesheet_directory() . '/includes/rest-customs/order-by-ibu.inc.php');
+
 
 add_action("admin_init", "hm_beer_count_sync");
 add_action('save_post', 'hm_refreshCache', 1); // clear REST cache after save
@@ -241,9 +245,12 @@ function hm_get_breweries($data){
 }
 */
 // basic product filtering function
-function hm_get_beers_base_iteration($args, $data){
+function hm_get_beers_base_iteration($args, $data, $extraOrderBy = Array()){
 
      $p = wc_get_products($args);
+     // Eg. It is not possible to order by price directly! Use this fn.
+     if ($extraOrderBy) $p = wc_products_array_orderby( $p, $extraOrderBy["field"], $extraOrderBy["order"] );
+
      $products = array();
      $userId = (isset($data["userId"]) ? $data["userId"] : "0" );
 
