@@ -96,10 +96,29 @@ function hops_beer_online_stores( $atts, $content = "" ) {
       $storeItemUrl = (isset($storesProductsUrls[$itemKey]) ? $storesProductsUrls[$itemKey]  : 0 );
       $storeIsVerified = get_field("is_verified", $store->ID);
       $storeIsOffline = get_field("is_offline", $store->ID);
-      //var_dump($store);
+      $storeIsOfficalStore = get_field("is_brewery_official_store", $store->ID);
+      $storeOfficialBrewery = NULL;
+      if ($storeIsOfficalStore) $storeOfficialBrewery = get_field("brewery", $store->ID);
+
+      $storeIsOfficialLabel = "";
+      $storeIsOfficialLabelMobile = "";
+      if (
+        isset($storeOfficialBrewery) && isset($product)
+        ){
+          $productBrewery = get_field("brewery", $postID);
+          if ($storeOfficialBrewery->ID == $productBrewery->ID){
+            $storeIsOfficialLabelMobile = '<i class="fa fa-check-circle d-md-none" aria-hidden="true" style="color:#3E9CEA;"></i>';
+            $storeIsOfficialLabel =  '<i class="fa fa-check-circle" aria-hidden="true" style="color:#3E9CEA;"></i> Oficial<br>';
+
+          }
+
+        }
+
 
       $storeMessage = '<i class="fa '.($storeIsVerified ? 'fa-check-circle' : 'fa-question-circle').'" '.($storeIsVerified ? 'style="color:#3BA2F2;' : '' ).'" aria-hidden="true"></i> '.($storeIsVerified ? "Verificada" : "No verificada" );
       if ($storeIsOffline) $storeMessage = '<i class="fa fa-times-circle" aria-hidden="true"></i> Offline';
+
+      $storeMessage = $storeIsOfficialLabel.$storeMessage; // add or not the official label
 
       $storeButtonBuy = '[vc_button rel="nofollow noreferrer noopener" button_color="color-742106" size="btn-lg" radius="btn-round" border_animation="btn-ripple-out" hover_fx="full-colored" shadow="yes" border_width="0" display="block" link="url:'.urlencode($storeItemUrl).'||target:_blank|" width="140" el_class="hero-download-button hero-message-download-button"]Comprar[/vc_button]';
       if ($storeIsOffline) $storeButtonBuy = "";
@@ -107,6 +126,10 @@ function hops_beer_online_stores( $atts, $content = "" ) {
 
       $lastUpdateTooltip = ($storesPricesLastUpdate ? '<a class="btn-tooltip" href="#" data-toggle="tooltip" data-placement="top" data-original-title="Actualización: '.$storesPricesLastUpdate.'" title=""><i class="fa fa-info-circle" aria-hidden="true"></i></a>' : '');
 
+      if ($_GET["dev"]){
+          // print_r($product);
+          // die();
+      }
 
       $ret .= do_shortcode('
 
@@ -116,7 +139,10 @@ function hops_beer_online_stores( $atts, $content = "" ) {
                     <table class="no-border" border="0" style="border:0;">
                       <tr>
                         <td style="padding-right:10px;">
-                          <img src="'.$storeImage.'" style="width:50px;min-width:50px;">
+                          <div style="position:relative;">
+                            <img src="'.$storeImage.'" style="width:50px;min-width:50px;">
+                            <span style="position:absolute;top:0px;right:1px;">'.$storeIsOfficialLabelMobile.'</span>
+                          </div>
                         </td>
                         <td>
                           [vc_custom_heading text_font="font-762333" heading_semantic="h6" text_size="h4"]
