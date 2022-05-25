@@ -42,6 +42,10 @@ function hops_beer_online_stores( $atts, $content = "" ) {
     //echo do_shortcode('[vc_empty_space empty_h="2"][vc_separator sep_color=",Default"]');
 
     $addToCartButton = do_shortcode('[vc_button dynamic="add-to-cart" quantity="variation" size="btn-lg" radius="btn-round" border_animation="btn-ripple-out" hover_fx="full-colored" shadow="yes" border_width="0" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" wide="yes" border_width="0" button_color="color-742106" display="inline" uncode_shortcode_id="'.get_the_ID().'" el_class="Xhm-beer-buy-button"]Text on the button[/vc_button]');
+    $goToAppCartButton = do_shortcode('[vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode("https://hops.uy/app/").'||target:_blank|" quantity="variation" size="btn-lg" radius="btn-round" border_animation="btn-ripple-out" hover_fx="full-colored" shadow="yes" border_width="0" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" wide="yes" border_width="0" button_color="color-742106" display="inline" uncode_shortcode_id="'.get_the_ID().'" el_class="Xhm-beer-buy-button"]
+      <i class="fa fa-check-circle" aria-hidden="true"></i> Compra verificada
+    [/vc_button]');
+
 
     if (isset($product) && $product->is_in_stock()){
       $ret .= do_shortcode('
@@ -75,7 +79,7 @@ function hops_beer_online_stores( $atts, $content = "" ) {
 
                 [vc_column_inner el_class="storeBuyButtonColumn" column_width_percent="100" position_vertical="middle" align_horizontal="align_right" gutter_size="3" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="2" align_mobile="align_left_mobile" mobile_width="3" width="2/4"]
 
-                '.$addToCartButton.'
+                '.$goToAppCartButton.'
 
               [/vc_column_inner]
             [/vc_row_inner]

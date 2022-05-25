@@ -18,28 +18,47 @@ function hops_store_metabox( $atts, $content = "" ) {
     $storeInstagram = get_field("instagram", $postID);
     $storeIsVerified = get_field("is_verified", $postID);
     $storeIsOnline = get_field("is_offline", $postID);
+    $storeIsOfficalStore = get_field("is_brewery_official_store", $postID);
+    $storeOfficialBrewery = NULL;
+    if ($storeIsOfficalStore) $storeOfficialBrewery = get_field("brewery", $postID);
 
     $whatsappLink = "";
     if ($storeWhatsapp) $whatsappLink = 'https://wa.me/'.str_replace("+", "", $storeWhatsapp);
 
     $ret .= '<div class="storeMetaBox">';
 
-            $ret .= do_shortcode('
-              [vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode($storeUrl).'||target:_blank|" size="btn-lg" radius="btn-circle" hover_fx="full-colored" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" border_width="0" display="inline" inline_mobile="yes" el_class="hm-beer-buy-button"]
-                Visitar
-              [/vc_button]');
-            if ($storeInstagram){
-              $storeInstagram = "https://www.instagram.com/".$storeInstagram."/";
+            if (! $storeOfficialBrewery){
               $ret .= do_shortcode('
-                [vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode($storeInstagram).'||target:_blank|" size="btn-lg" radius="btn-circle" hover_fx="full-colored" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" border_width="0" display="inline" inline_mobile="yes" el_class="hm-beer-buy-button storeButtonWhatsapp btn-outline"]
-                  <i class="fa fa-instagram" aria-hidden="true" style="Xmargin-right:0;"></i>Seguir
-                [/vc_button]
-              ');
-            }
-            if ($storeWhatsapp && !$storeInstagram){
+                [vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode($storeUrl).'||target:_blank|" size="btn-lg" radius="btn-circle" hover_fx="full-colored" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" border_width="0" display="inline" inline_mobile="yes" el_class="hm-beer-buy-button"]
+                  Visitar
+                [/vc_button]');
+
+                if ($storeInstagram ){
+                  $storeInstagram = "https://www.instagram.com/".$storeInstagram."/";
+                  $ret .= do_shortcode('
+                    [vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode($storeInstagram).'||target:_blank|" size="btn-lg" radius="btn-circle" hover_fx="full-colored" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" border_width="0" display="inline" inline_mobile="yes" el_class="hm-beer-buy-button storeButtonWhatsapp btn-outline"]
+                      <i class="fa fa-instagram" aria-hidden="true" style="Xmargin-right:0;"></i>Seguir
+                    [/vc_button]
+                  ');
+                }
+                if ($storeWhatsapp && !$storeInstagram){
+                  $ret .= do_shortcode('
+                    [vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode($whatsappLink).'||target:_blank|" size="btn-lg" radius="btn-circle" hover_fx="full-colored" custom_typo="yes" font_family="font-156269" outline="yes" font_weight="600" text_transform="uppercase" border_width="0" display="inline" inline_mobile="yes" el_class="hm-beer-buy-button storeButtonWhatsapp btn-outline"]
+                      <i class="fa fa-whatsapp" aria-hidden="true" style="Xmargin-right:0;"></i>Contactar
+                    [/vc_button]
+                  ');
+                }
+
+            }else if ($storeOfficialBrewery){
+              $breweryPermalink = get_permalink($storeOfficialBrewery->ID);
               $ret .= do_shortcode('
-                [vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode($whatsappLink).'||target:_blank|" size="btn-lg" radius="btn-circle" hover_fx="full-colored" custom_typo="yes" font_family="font-156269" outline="yes" font_weight="600" text_transform="uppercase" border_width="0" display="inline" inline_mobile="yes" el_class="hm-beer-buy-button storeButtonWhatsapp btn-outline"]
-                  <i class="fa fa-whatsapp" aria-hidden="true" style="Xmargin-right:0;"></i>Contactar
+                [vc_button link="url:'.urlencode($breweryPermalink).'" size="btn-lg" radius="btn-circle" hover_fx="full-colored" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" border_width="0" display="inline" inline_mobile="yes" el_class="hm-beer-buy-button"]
+                  Ver cervecería
+                [/vc_button]');
+
+              $ret .= do_shortcode('
+                [vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode("https://hops.uy/app/").'||target:_blank|" size="btn-lg" radius="btn-circle" hover_fx="full-colored" custom_typo="yes" font_family="font-156269" outline="yes" font_weight="600" text_transform="uppercase" border_width="0" display="inline" inline_mobile="yes" el_class="hm-beer-buy-button storeButtonWhatsapp btn-outline"]
+                  <i class="fa fa-heart-o" aria-hidden="true" style="Xmargin-right:0;"></i>Seguir
                 [/vc_button]
               ');
             }
