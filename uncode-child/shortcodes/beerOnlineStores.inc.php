@@ -32,7 +32,7 @@ function hops_beer_online_stores( $atts, $content = "" ) {
                           [vc_column_inner column_width_use_pixel="yes" align_horizontal="align_center" gutter_size="3" overlay_alpha="50" shift_x="0" shift_y="0" shift_y_down="0" z_index="0" medium_width="0" mobile_width="0" width="1/1" column_width_pixel="700"]
                             [vc_custom_heading heading_semantic="h3" text_font="font-762333" text_size="h1" sub_lead="no"]
                               Compra online
-                              <p class="text-center"><i class="fa fa-bell" aria-hidden="true"></i> Recordá que comprando a través de la app de HOPS ganás puntos canjeables por descuentos en los bares asociados.</p>
+                              <p class="text-center"><mark><i class="fa fa-bell" aria-hidden="true"></i> ¿Conocés los Puntos HOPS?</mark> Ganalos con la Compra Verificada y accedé a descuentos en los bares asociados y a envíos gratuitos, <a href="/revista/novedades/como-funciona-hops/">conocé más</a>.</p>
                             [/vc_custom_heading]
 
                           [/vc_column_inner]
@@ -42,9 +42,11 @@ function hops_beer_online_stores( $atts, $content = "" ) {
     //echo do_shortcode('[vc_empty_space empty_h="2"][vc_separator sep_color=",Default"]');
 
     $addToCartButton = do_shortcode('[vc_button dynamic="add-to-cart" quantity="variation" size="btn-lg" radius="btn-round" border_animation="btn-ripple-out" hover_fx="full-colored" shadow="yes" border_width="0" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" wide="yes" border_width="0" button_color="color-742106" display="inline" uncode_shortcode_id="'.get_the_ID().'" el_class="Xhm-beer-buy-button"]Text on the button[/vc_button]');
-    $goToAppCartButton = do_shortcode('[vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode("https://hops.uy/app/").'||target:_blank|" quantity="variation" size="btn-lg" radius="btn-round" border_animation="btn-ripple-out" hover_fx="full-colored" shadow="yes" border_width="0" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" wide="yes" border_width="0" button_color="color-742106" display="inline" uncode_shortcode_id="'.get_the_ID().'" el_class="Xhm-beer-buy-button"]
-      <i class="fa fa-check-circle" aria-hidden="true"></i> Compra verificada
+    $goToAppCartButton = do_shortcode('[vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode("https://hops.uy/app/").'||target:_blank|" quantity="variation" size="btn-lg" radius="btn-round" border_animation="btn-ripple-out" hover_fx="full-colored" shadow="yes" border_width="0" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" wide="yes" border_width="0" button_color="color-742106" display="inline" uncode_shortcode_id="'.get_the_ID().'" el_class="hero-download-button hero-message-download-button" width="140"]
+      <i class="fa fa-check-circle d-mobile-none" aria-hidden="true"></i> Compra verificada
     [/vc_button]');
+
+    // $goToAppCartButton = do_shortcode('');
 
 
     if (isset($product) && $product->is_in_stock()){

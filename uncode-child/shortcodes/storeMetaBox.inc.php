@@ -26,7 +26,7 @@ function hops_store_metabox( $atts, $content = "" ) {
     if ($storeWhatsapp) $whatsappLink = 'https://wa.me/'.str_replace("+", "", $storeWhatsapp);
 
     $ret .= '<div class="storeMetaBox">';
-
+    $ret .= ' <div class="storeMetaBox-Buttons">';
             if (! $storeOfficialBrewery){
               $ret .= do_shortcode('
                 [vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode($storeUrl).'||target:_blank|" size="btn-lg" radius="btn-circle" hover_fx="full-colored" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" border_width="0" display="inline" inline_mobile="yes" el_class="hm-beer-buy-button"]
@@ -53,20 +53,21 @@ function hops_store_metabox( $atts, $content = "" ) {
               $breweryPermalink = get_permalink($storeOfficialBrewery->ID);
               $ret .= do_shortcode('
                 [vc_button link="url:'.urlencode($breweryPermalink).'" size="btn-lg" radius="btn-circle" hover_fx="full-colored" custom_typo="yes" font_family="font-156269" font_weight="600" text_transform="uppercase" border_width="0" display="inline" inline_mobile="yes" el_class="hm-beer-buy-button"]
-                  Ver cervecería
+                  Cervecería
                 [/vc_button]');
 
               $ret .= do_shortcode('
-                [vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode("https://hops.uy/app/").'||target:_blank|" size="btn-lg" radius="btn-circle" hover_fx="full-colored" custom_typo="yes" font_family="font-156269" outline="yes" font_weight="600" text_transform="uppercase" border_width="0" display="inline" inline_mobile="yes" el_class="hm-beer-buy-button storeButtonWhatsapp btn-outline"]
+                [vc_button rel="nofollow noreferrer noopener" link="url:'.urlencode("https://hops.uy/app/").'||target:_blank|" size="btn-lg" radius="btn-circle" hover_fx="full-colored" custom_typo="yes" font_family="font-156269" outline="yes" font_weight="600" text_transform="uppercase" border_width="0" display="inline" inline_mobile="yes" el_class="hm-beer-buy-button btn-outline"]
                   <i class="fa fa-heart-o" aria-hidden="true" style="Xmargin-right:0;"></i>Seguir
                 [/vc_button]
               ');
             }
 
-
+    $ret .= "</div>";
 
             $ret .= do_shortcode('[vc_empty_space empty_h="1"]');
             $ret .= do_shortcode('[storestatus align="text-center"][/storestatus]');
+
     $ret .= "</div>";
     $ret .= "<div style='clear:both'></div>";
 
