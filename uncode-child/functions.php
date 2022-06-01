@@ -12,6 +12,7 @@ require_once(  get_stylesheet_directory() . '/shortcodes/storeMetaBox.inc.php');
 require_once(  get_stylesheet_directory() . '/shortcodes/storeBeersAndBreweries.inc.php');
 // other includes
 require_once(  get_stylesheet_directory() . '/includes/notifications.inc.php');
+require_once(  get_stylesheet_directory() . '/includes/schemas-modify.inc.php');
 
 define("HM_ADD_COMMENT_SCORE_POINTS", 1);
 define("HM_ADD_COMMENT_ORDER_POINTS", 10);
