@@ -110,7 +110,14 @@ add_filter( 'avatar_defaults', 'hm_modify_default_avatar' ); // change default a
 add_action( 'user_register', 'hm_define_displayname' );
 add_action( 'profile_update', 'hm_define_displayname' );
 add_filter('duplicate_comment_id', '__return_false'); // allow duplicate comments
-add_filter('woocommerce_rest_prepare_product_object', 'hops_extend_product_response', 10, 3); // extend product response
+
+// product rest api response extensions
+require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product-stores.inc.php'); // add stores
+require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product-scores.inc.php'); // add scores
+require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product-user_comment.inc.php'); // add user comment
+require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product-brewery.inc.php'); // add brewery
+
+
 add_action( 'woocommerce_new_order', 'hm_on_new_order',  1, 1  ); // on new order: assign user new points score
 add_filter('rest_page_query', 'order_pages_by_followers', 10, 3); // add query type to pages; followers
 // add extra field (author comment) for pages
@@ -359,85 +366,7 @@ function hops_add_user_comment_to_product_response($userId, $postId){
   return $newCommentArray;
 }
 
-// extend product response to add for example if user has commented.
-function hops_extend_product_response($response, $object, $request) {
-    if (empty($response->data)) return $response;
 
-    $postId = $object->get_id(); //it will fetch product id
-    $userId = $request->get_param( 'userId' );
-    $postQueryId = $request->get_param( 'id' );
-
-
-    $response->data['user_comment'] = Array(); // init empty
-
-    /*
-    $response->data['stores_data'] = Array(
-      Array("image" => '', "name" => "", "id" => 29348)
-    );
-    */
-
-    $response->data['stores'] = Array();
-    $productStores = get_field("stores", $postId);
-    $productStoresPrices = get_field("store_products_prices", $postId);
-    $productStoresUrls = get_field("stores_products_urls", $postId);
-    $productStoresPricesLastUpdate = get_field("stores_prices_last_update", $postId);
-
-    // $response->data['stores']['prices_last_update'] = $productStoresPricesLastUpdate;
-    $storeIndex = 0;
-    foreach ( $productStores as $store){
-      $aStore = (array)$store;
-
-
-      $finalStore["id"] = (string)$aStore["ID"];
-      $finalStore["name"] = $aStore["post_title"];
-      //$storeThumbnail = wp_get_attachment_image_src( get_post_thumbnail_id( $finalStore["id"] ));
-      $storeThumbnail = get_the_post_thumbnail_url( $finalStore["id"], 'full');
-
-      $finalStore["price"] = (isset($productStoresPrices[$storeIndex]) ? $productStoresPrices[$storeIndex] : "" );
-      $finalStore["price_last_update"] = $productStoresPricesLastUpdate; // general now, might be store by store in the future
-      $finalStore["url"] = (isset($productStoresUrls[$storeIndex]) ? $productStoresUrls[$storeIndex] : "" );
-
-      $isStoreVerified = get_field("is_verified", $aStore["ID"]);
-      $finalStore["is_verified"] = ($isStoreVerified == true ? "true" : "false");
-
-      $finalStore["image"] = $storeThumbnail;
-
-      $response->data['stores'][] = $finalStore;
-      $storeIndex++;
-    }
-
-
-    $breweryFromThisPostId = $postId;
-    if ($postQueryId) $breweryFromThisPostId = $postQueryId;
-
-    $brewery = get_field("brewery", $breweryFromThisPostId);
-    $response->data['brewery_whatsapp'] = get_field("whatsapp", $brewery->ID);
-
-
-    /*
-    $response->data['scores'] = Array(
-      'opinionCount' => 0,
-      'opinionScore' => 0.0
-    );
-    */
-
-    $postScores = hm_post_scores($postId);
-    $response->data['scores'] = Array(
-      'opinionCount' => $postScores["opinionCount"],
-      'opinionScore' => $postScores["opinionScore"]
-    );
-
-
-
-    $comments = hops_add_user_comment_to_product_response($userId, $postId);
-    if( empty($comments) ) return $response; // <<<<<<<<<< WATCH
-    $response->data['user_comment'] = $comments;
-
-
-
-
-    return $response;
-}
 
 /// get product score (count + avg score)
 function hm_post_scores($postId){
