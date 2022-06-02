@@ -12,9 +12,9 @@ add_action( 'rest_api_init', function () {
         'get_callback' => function( $page ) {
 
             // get brewery object
-            $brewery = get_field("brewery", $page["id"]);
+            $brewery = get_post(get_the_ID());
             // add brewery data
-            $response->data['brewery'] = hops_build_product_brewery_response($brewery); 
+            return hops_build_product_brewery_response($brewery);
 
         },
         'update_callback' => function( $scores, $comment_obj ) {

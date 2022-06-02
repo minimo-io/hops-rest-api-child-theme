@@ -127,14 +127,13 @@ function hops_build_product_brewery_response($brewery){
   $breweryUrl = get_field("brewery_url", $brewery->ID);
   $breweryInstagram = get_field("brewery_instagram", $brewery->ID);
   $breweryWhatsapp = get_field("whatsapp", $brewery->ID);
-  $breweryScoreAvg = get_field("score_avg", $brewery->ID);
+  $breweryScoreAvg = get_field("score", $brewery->ID);
   $breweryScoreCount = get_field("score_count", $brewery->ID);
   $breweryViewsCount = get_field("views_count", $brewery->ID);
   $breweryViewsCountHistory = get_field("views_count_history", $brewery->ID);
 
   // build response
   return Array(
-
       'id' => $brewery->ID,
       'name' => $brewery->post_title,
       'description' => $brewery->post_excerpt,
