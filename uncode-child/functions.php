@@ -30,7 +30,7 @@ add_filter( 'wp_rest_cache/allowed_endpoints', 'hm_add_app_manifest_endpoint', 1
 add_filter('woocommerce_short_description', 'hm_woocommerce_short_description',10, 1);
 
 
-// add custom calls to REST API
+// add custom endpoints to REST API
 require_once(  get_stylesheet_directory() . '/includes/rest-customs/order-by-ibu.inc.php');
 require_once(  get_stylesheet_directory() . '/includes/rest-customs/order-beers-by-price.inc.php');
 require_once(  get_stylesheet_directory() . '/includes/rest-customs/order-beers-by-abv.inc.php');
@@ -71,13 +71,6 @@ add_action( 'rest_api_init', function () {
      'callback' => 'hm_get_user_preferences_from_id',
    ) );
 
-/*
-   // get user score custom field
- register_rest_route( 'hops/v1', '/getUser/userID/(?P<userId>[\d]+)/(?P<type>[a-zA-Z0-9_-]+)', array(
-    'methods' => 'GET',
-    'callback' => 'hm_get_user_preferences_from_id',
-  ) );
-*/
    // update comment for beer or brewery
    register_rest_route( 'hops/v1', '/updateComment', array(
       'methods' => Array('POST'),
@@ -90,14 +83,6 @@ add_action( 'rest_api_init', function () {
      'callback' => 'hm_increase_post_views_count',
    ) );
 
-   /*
-
-   // increase views count for pages & products
-   register_rest_route( 'hops/v1', '/getBreweries', array(
-      'methods' => Array('GET'),
-      'callback' => 'hm_get_breweries',
-    ) );
-  */
 
 });
 
@@ -111,69 +96,65 @@ add_action( 'user_register', 'hm_define_displayname' );
 add_action( 'profile_update', 'hm_define_displayname' );
 add_filter('duplicate_comment_id', '__return_false'); // allow duplicate comments
 
+
+
 // product rest api response extensions
-require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product-stores.inc.php'); // add stores
-require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product-scores.inc.php'); // add scores
-require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product-user_comment.inc.php'); // add user comment
-require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product-brewery.inc.php'); // add brewery
+require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product/product-stores.inc.php'); // add stores
+require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product/product-scores.inc.php'); // add scores
+require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product/product-user_comment.inc.php'); // add user comment
+require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product/product-brewery.inc.php'); // add brewery
+
+// breweries rest api response extensions
+require_once(  get_stylesheet_directory() . '/includes/rest-extensions/brewery/brewery-user_comment.inc.php'); // add user comment
+require_once(  get_stylesheet_directory() . '/includes/rest-extensions/brewery/brewery-scores.inc.php'); // add scores
+  // this should be deleted once that breweries are not pages and have their own endpoint and custom post type
+require_once(  get_stylesheet_directory() . '/includes/rest-extensions/brewery/brewery-brewery.inc.php'); // add brewery
+
 
 
 add_action( 'woocommerce_new_order', 'hm_on_new_order',  1, 1  ); // on new order: assign user new points score
 add_filter('rest_page_query', 'order_pages_by_followers', 10, 3); // add query type to pages; followers
-// add extra field (author comment) for pages
-add_action( 'rest_api_init', function () {
-    // add user_comment value to breweries (pages)
-    register_rest_field( 'page', 'user_comment', array(
-        'get_callback' => function( $page, $fieldName, $request, $objectType ) {
-            //global $wp_rest_additional_fields;
-            $userId = $request->get_param("userId");
-
-            // check if user exists
-            $user = get_user_by("id", $userId); // check if user exists
-            if (!$user) return Array();
-
-            $comments = hops_add_user_comment_to_product_response($userId, $page["id"]);
-
-            if( empty($comments) ) return Array();
-
-            return $comments;
-            /*
-            $comment_obj = get_comment( $page['user_id'] );
-            return (array) $comment_obj;
-              */
-        },
-        'update_callback' => function( $user_comment, $comment_obj ) {
-            return true;
-        },
-        'schema' => array(
-            'description' => __( 'User comment.' ),
-            'type'        => 'string'
-        ),
-    ) );
-
-    // add scores to breweries
-    register_rest_field( 'page', 'scores', array(
-        'get_callback' => function( $page ) {
-
-            $postScores = hm_post_scores( $page["id"] );
-            return Array(
-              'opinionCount' => $postScores["opinionCount"],
-              'opinionScore' => $postScores["opinionScore"],
-            );
-
-        },
-        'update_callback' => function( $scores, $comment_obj ) {
-            return true;
-        },
-        'schema' => array(
-            'description' => __( 'Post score.' ),
-            'type'        => 'string'
-        ),
-    ) );
 
 
-} );
+// this function gets a brewery and builds a Brewery REST API Response
+function hops_build_product_brewery_response($brewery){
+  // get brewery data
+  $breweryImage = wp_get_attachment_image_src( get_post_thumbnail_id( $brewery->ID ), 'thumbnail' );
+  $breweryLocation = get_field("location", $brewery->ID);
+  $breweryFollowers = get_field("followers", $brewery->ID);
+  $breweryBeersCount = get_field("beers_count", $brewery->ID);
+  $breweryBgColor = get_field("bg_color", $brewery->ID);
+  $breweryUrl = get_field("brewery_url", $brewery->ID);
+  $breweryInstagram = get_field("brewery_instagram", $brewery->ID);
+  $breweryWhatsapp = get_field("whatsapp", $brewery->ID);
+  $breweryScoreAvg = get_field("score_avg", $brewery->ID);
+  $breweryScoreCount = get_field("score_count", $brewery->ID);
+  $breweryViewsCount = get_field("views_count", $brewery->ID);
+  $breweryViewsCountHistory = get_field("views_count_history", $brewery->ID);
 
+  // build response
+  return Array(
+
+      'id' => $brewery->ID,
+      'name' => $brewery->post_title,
+      'description' => $brewery->post_excerpt,
+      'date_published' => $brewery->post_date_gmt,
+      'date_modified' => $brewery->post_modified_gmt,
+      'image' => (isset($breweryImage) ? $breweryImage[0] : "0"),
+      'location' => $breweryLocation,
+      'followers' => $breweryFollowers,
+      'beers_count' => $breweryBeersCount,
+      'bg_color' => $breweryBgColor,
+      'brewery_url' => $breweryUrl,
+      'brewery_instagram' => $breweryInstagram,
+      'whatsapp' => $breweryWhatsapp,
+      'score_avg' => $breweryScoreAvg,
+      'score_count' => $breweryScoreCount,
+      'views_count' => $breweryViewsCount,
+      'views_count_history' => $breweryViewsCountHistory
+      
+  );
+}
 
 function hm_on_new_order($order_id) {
   $order = new WC_Order( $order_id );
@@ -288,8 +269,9 @@ function hm_get_beers_base_iteration($args, $data, $extraOrderBy = Array()){
         }
         $a_product['categories'] = $new_categories;
 
+        // build brewery response
         $brewery = get_field("brewery", $a_product["id"]);
-        $a_product['brewery_whatsapp'] = get_field("whatsapp", $brewery->ID);
+        $a_product['breweryX'] = hops_build_product_brewery_response($brewery);
 
          if (class_exists('ACF')) $a_product["bg_color"] = get_field("bg_color", $a_product["id"]);
 
@@ -1104,29 +1086,7 @@ function hm_get_beers_by_brewery_id( $data ) {
    ) );
 
    return hm_get_beers_base_iteration($args, $data);
-  /*
- $p = wc_get_products($args);
-  $products = array();
-  $userId = (isset($data["userId"]) ? $data["userId"] : "0" );
-
-
-  foreach ($p as $product) {
-      $a_product = $product->get_data();
-      $comments = hops_add_user_comment_to_product_response($userId, $a_product["id"]);
-
-
-      $a_product["featured_image"] = hm_get_image_src($a_product["image_id"]);
-      $a_product['user_comment'] = $comments; //try to add user comment for product if any
-
-      if (class_exists('ACF')) $a_product["bg_color"] = get_field("bg_color", $a_product["id"]);
-
-      $products[] = $a_product;
-
-
-  }
-
-  return new WP_REST_Response($products, 200);
-  */
+ 
 }
 
 
