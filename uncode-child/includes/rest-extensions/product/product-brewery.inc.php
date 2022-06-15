@@ -17,7 +17,7 @@ function hops_extend_product_response_add_brewery($response, $object, $request){
     $brewery = get_field("brewery", $breweryFromThisPostId);
 
     // add brewery data
-    $response->data['breweryX'] = hops_build_product_brewery_response($brewery); 
+    $response->data['brewery'] = hops_build_product_brewery_response($brewery); 
 
     return $response;
 }

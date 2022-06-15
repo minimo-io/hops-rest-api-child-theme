@@ -103,13 +103,14 @@ require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product/p
 require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product/product-scores.inc.php'); // add scores
 require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product/product-user_comment.inc.php'); // add user comment
 require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product/product-brewery.inc.php'); // add brewery
-
+require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product/product-meta_data.inc.php'); // remove meta_data
 // breweries rest api response extensions
 require_once(  get_stylesheet_directory() . '/includes/rest-extensions/brewery/brewery-user_comment.inc.php'); // add user comment
 require_once(  get_stylesheet_directory() . '/includes/rest-extensions/brewery/brewery-scores.inc.php'); // add scores
   // this should be deleted once that breweries are not pages and have their own endpoint and custom post type
 require_once(  get_stylesheet_directory() . '/includes/rest-extensions/brewery/brewery-brewery.inc.php'); // add brewery
-
+// promos rest api response extensions
+require_once(  get_stylesheet_directory() . '/includes/rest-extensions/promos/promos-brewery.inc.php'); // add brewery_associated if field exits
 
 
 add_action( 'woocommerce_new_order', 'hm_on_new_order',  1, 1  ); // on new order: assign user new points score
@@ -258,6 +259,9 @@ function hm_get_beers_base_iteration($args, $data, $extraOrderBy = Array()){
            'opinionScore' => $postScores["opinionScore"]
          );
 
+        // remove meta data unnecesary fields (too big, too useless)
+        $a_product['meta_data'] = null;
+
         $a_product['acf'] = get_fields($a_product["id"]);
         $categories = get_the_terms( $a_product["id"], 'product_cat' );
         $new_categories = Array();
@@ -270,7 +274,7 @@ function hm_get_beers_base_iteration($args, $data, $extraOrderBy = Array()){
 
         // build brewery response
         $brewery = get_field("brewery", $a_product["id"]);
-        $a_product['breweryX'] = hops_build_product_brewery_response($brewery);
+        $a_product['brewery'] = hops_build_product_brewery_response($brewery);
 
          if (class_exists('ACF')) $a_product["bg_color"] = get_field("bg_color", $a_product["id"]);
 
