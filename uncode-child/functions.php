@@ -10,6 +10,7 @@ require_once(  get_stylesheet_directory() . '/shortcodes/beerDetails.inc.php');
 require_once(  get_stylesheet_directory() . '/shortcodes/beerOnlineStores.inc.php');
 require_once(  get_stylesheet_directory() . '/shortcodes/storeMetaBox.inc.php');
 require_once(  get_stylesheet_directory() . '/shortcodes/storeBeersAndBreweries.inc.php');
+require_once(  get_stylesheet_directory() . '/shortcodes/barBox.inc.php');
 // other includes
 require_once(  get_stylesheet_directory() . '/includes/notifications.inc.php');
 require_once(  get_stylesheet_directory() . '/includes/schemas-modify.inc.php');
@@ -110,15 +111,45 @@ require_once(  get_stylesheet_directory() . '/includes/rest-extensions/brewery/b
   // this should be deleted once that breweries are not pages and have their own endpoint and custom post type
 require_once(  get_stylesheet_directory() . '/includes/rest-extensions/brewery/brewery-brewery.inc.php'); // add brewery
 // promos rest api response extensions
-require_once(  get_stylesheet_directory() . '/includes/rest-extensions/promos/promos-brewery.inc.php'); // add brewery_associated if field exits
+require_once(  get_stylesheet_directory() . '/includes/rest-extensions/promos/promos-data.inc.php'); // add promo data
 
 
 add_action( 'woocommerce_new_order', 'hm_on_new_order',  1, 1  ); // on new order: assign user new points score
 add_filter('rest_page_query', 'order_pages_by_followers', 10, 3); // add query type to pages; followers
 
+// get a promo post id and build the promo data object
+function hops_build_promo_response($promoID, $excludeBreweryAssoc = false){
+
+  $promo = get_post($promoID);
+
+  $promoImage = wp_get_attachment_image_src( get_post_thumbnail_id( $promoID ), 'thumbnail' );
+  $breweryAssoc = get_field("brewery_associated", $promo);
+  if ($breweryAssoc && $excludeBreweryAssoc == false) $breweryAssoc = hops_build_product_brewery_response($breweryAssoc, true); // exclude loading the promo again
+  if ($excludeBreweryAssoc == true) $breweryAssoc = null; // reset it, to avoid re-loading breweries from the product->brewery->promo response
+
+  return Array(
+    'id'=>$promoID,
+    'avatar'=>(isset($promoImage) ? $promoImage[0] : "0"),
+    'name'=>$promo->post_title,
+    'nameShort' => get_field("name_short", $promo),
+    'minBuy' => get_field("min_buy", $promo),
+    'discountValue' => get_field("value", $promo),
+    'bgColor'=> get_field("bg_color", $promo),
+    'description'=>$promo->post_excerpt,
+    'channelType'=> get_field("channel_type", $promo),
+    'promoType'=> get_field("type", $promo),
+    'pointsScore'=> get_field("points_score", $promo),
+    'dateLimit'=> get_field("date_limit", $promo),
+    'callToActionText'=> get_field("call_to_action_button_text", $promo),
+    'callToActionIcon'=> get_field("call_to_action_button_icon", $promo),
+    'productAssociated'=> get_field("product_associated", $promo),
+    'breweryAssociated'=> $breweryAssoc,
+    'barAssociated'=> get_field("bar_associated", $promo),
+  );
+}
 
 // this function gets a brewery and builds a Brewery REST API Response
-function hops_build_product_brewery_response($brewery){
+function hops_build_product_brewery_response($brewery, $excludePromo = false){
   // get brewery data
   $breweryImage = wp_get_attachment_image_src( get_post_thumbnail_id( $brewery->ID ), 'thumbnail' );
   $breweryLocation = get_field("location", $brewery->ID);
@@ -132,6 +163,29 @@ function hops_build_product_brewery_response($brewery){
   $breweryScoreCount = get_field("score_count", $brewery->ID);
   $breweryViewsCount = get_field("views_count", $brewery->ID);
   $breweryViewsCountHistory = get_field("views_count_history", $brewery->ID);
+
+  $breweryDeliveryMin = get_field("delivery_min", $brewery->ID);
+  $breweryDeliveryCost = get_field("delivery_cost", $brewery->ID);
+  $breweryDeliveryTime = get_field("delivery_time", $brewery->ID);
+
+  if (empty($breweryDeliveryMin)) $breweryDeliveryMin = 3;
+  if (empty($breweryDeliveryCost)) $breweryDeliveryCost = 100;
+  if (empty($breweryDeliveryTime)) $breweryDeliveryTime = "1-2 días";
+
+  // load all brewery promos
+  $breweryPromos = Array();
+  if ($excludePromo == false){
+    // brewery general promos
+    $acfBreweryPromos = get_field("promos", $brewery->ID);
+    foreach ($acfBreweryPromos as $promo){
+      $breweryPromos[] = Array(
+        'promo' => $promo->ID,
+        'data' => hops_build_promo_response($promo->ID, true)
+      );
+    }
+    // promos from the specific products of the brewery
+    // PENDING!
+  }
 
   // build response
   return Array(
@@ -151,7 +205,12 @@ function hops_build_product_brewery_response($brewery){
       'score_avg' => $breweryScoreAvg,
       'score_count' => $breweryScoreCount,
       'views_count' => $breweryViewsCount,
-      'views_count_history' => $breweryViewsCountHistory
+      'views_count_history' => $breweryViewsCountHistory,
+      'promos' => ($excludePromo == false ? $breweryPromos : null),
+      'delivery_min' => $breweryDeliveryMin,
+      'delivery_cost' => $breweryDeliveryCost,
+      'delivery_time' => $breweryDeliveryTime
+    
       
   );
 }
