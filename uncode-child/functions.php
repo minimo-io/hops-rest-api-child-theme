@@ -16,8 +16,8 @@ require_once(  get_stylesheet_directory() . '/includes/notifications.inc.php');
 require_once(  get_stylesheet_directory() . '/includes/schemas-modify.inc.php');
 
 define("HM_ADD_COMMENT_SCORE_POINTS", 1);
-define("HM_ADD_COMMENT_ORDER_POINTS", 10);
-
+define("HM_ADD_ORDER_POINTS", 10);
+define("HM_SEND_BREWERY_EMAIL_WHEN_NEW_ORDER", false);
 
 // Analytics & Clarity when not admin
 add_action('wp_head', 'hops_add_analytics');
@@ -112,10 +112,31 @@ require_once(  get_stylesheet_directory() . '/includes/rest-extensions/brewery/b
 require_once(  get_stylesheet_directory() . '/includes/rest-extensions/brewery/brewery-brewery.inc.php'); // add brewery
 // promos rest api response extensions
 require_once(  get_stylesheet_directory() . '/includes/rest-extensions/promos/promos-data.inc.php'); // add promo data
-
-
-add_action( 'woocommerce_new_order', 'hm_on_new_order',  1, 1  ); // on new order: assign user new points score
 add_filter('rest_page_query', 'order_pages_by_followers', 10, 3); // add query type to pages; followers
+
+
+// handling orders creation & updates (add actions like sending notifications, etc)
+require_once(  get_stylesheet_directory() . '/includes/orders.inc.php'); // add brewery
+
+function hops_log($log){
+  $logfile = get_stylesheet_directory() . '/logs/hops.log';
+
+  $prevLogText = "";
+  if (file_exists($logfile)) $prevLogText = file_get_contents($logfile);
+
+  $newLogLine = date("Y-m-d H:i:s", strtotime('-3 hours'))." - ".$log."\n\r";
+
+  file_put_contents($logfile, $newLogLine . $prevLogText);
+}
+
+function hops_send_brewery_email_with_order($breweryID, $breweryUserId, $orderID){
+  if (HM_SEND_BREWERY_EMAIL_WHEN_NEW_ORDER) return true;
+  if (!HM_SEND_BREWERY_EMAIL_WHEN_NEW_ORDER) return false;
+}
+
+function hops_add_notification($userID, $notificationText = "", $notificationType = "info"){
+  return true;
+}
 
 // get a promo post id and build the promo data object
 function hops_build_promo_response($promoID, $excludeBreweryAssoc = false){
@@ -215,12 +236,8 @@ function hops_build_product_brewery_response($brewery, $excludePromo = false){
   );
 }
 
-function hm_on_new_order($order_id) {
-  $order = new WC_Order( $order_id );
-  $userId = $order->get_customer_id();
-  hm_update_user_score($userId, "add", HM_ADD_COMMENT_ORDER_POINTS);
 
-}
+
 
 function order_pages_by_followers($args, $request) {
     if(isset($request["orderType"]) && $request["orderType"] == "followers" ) {
