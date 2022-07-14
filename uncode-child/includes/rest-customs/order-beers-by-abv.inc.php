@@ -29,8 +29,6 @@ function hm_get_beers_by_abv($data){
       'meta_compare' => '=' //'meta_compare' => 'NOT IN'  or = or IN
       */
    ) );
-   // var_dump($args);
-   // die();
 
    return hm_get_beers_base_iteration($args, $data);
 

@@ -105,6 +105,8 @@ require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product/p
 require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product/product-user_comment.inc.php'); // add user comment
 require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product/product-brewery.inc.php'); // add brewery
 require_once(  get_stylesheet_directory() . '/includes/rest-extensions/product/product-meta_data.inc.php'); // remove meta_data
+// order rest api response extension
+require_once(  get_stylesheet_directory() . '/includes/rest-extensions/order/order-brewery.inc.php'); // remove meta_data
 // breweries rest api response extensions
 require_once(  get_stylesheet_directory() . '/includes/rest-extensions/brewery/brewery-user_comment.inc.php'); // add user comment
 require_once(  get_stylesheet_directory() . '/includes/rest-extensions/brewery/brewery-scores.inc.php'); // add scores
@@ -117,6 +119,8 @@ add_filter('rest_page_query', 'order_pages_by_followers', 10, 3); // add query t
 
 // handling orders creation & updates (add actions like sending notifications, etc)
 require_once(  get_stylesheet_directory() . '/includes/orders.inc.php'); // add brewery
+// add & handle WooCommerce order statuses
+require_once(  get_stylesheet_directory() . '/includes/order-status.inc.php'); 
 
 function hops_log($log){
   $logfile = get_stylesheet_directory() . '/logs/hops.log';
@@ -1192,3 +1196,4 @@ add_action('wp_enqueue_scripts', 'theme_enqueue_styles', 100);
 function hm_shortcode_mailchimp(){
 	echo do_shortcode( '[mc4wp_form id="88696"]' );
 }
+?>

@@ -1,4 +1,3 @@
-
 <?php
 add_shortcode( 'barbox', 'hops_bar_box' );
 
